@@ -1,0 +1,7 @@
+Koa (backend/server/controller stuff): https://devdocs.io/koa/
+Mysql NPM package (database controller): https://www.npmjs.com/package/mysql#introduction
+React (frontend javascript library): https://reactjs.org/docs/getting-started.html
+Semantic UI React (prebuilt components for React): https://react.semantic-ui.com/usage
+Javascript: https://developer.mozilla.org/en-US/docs/Web/JavaScript
+
+https://remotemysql.com/databases.php (database host, not documentation)
