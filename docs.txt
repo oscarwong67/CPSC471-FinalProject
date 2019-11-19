@@ -5,3 +5,8 @@ Semantic UI React (prebuilt components for React): https://react.semantic-ui.com
 Javascript: https://developer.mozilla.org/en-US/docs/Web/JavaScript
 
 https://remotemysql.com/databases.php (database host, not documentation)
+
+View database online:
+https://remotemysql.com/phpmyadmin/index.php?db=cfxpQFeAgl
+Username: cfxpQFeAgl
+password: 5wLicDMtkr
