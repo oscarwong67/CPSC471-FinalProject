@@ -8,7 +8,7 @@ var connection = mysql.createConnection({
  
 connection.connect();
  
-connection.query('SELECT 1 + 1 AS solution', (error, results, fields) => {
+connection.query('CREATE TABLE VEHICLE (Vehicle_id INT NOT NULL, PRIMARY KEY (Vehicle_id), UNIQUE(Vehicle_id))', (error, results, fields) => {
   if (error) throw error;
   console.log('The solution is: ', results[0].solution);
 });
