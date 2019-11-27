@@ -1,11 +1,8 @@
-let Koa = require('Koa')
-let cors = require('koa-cors')
-let bodyparser = require('koa-bodyparser')
-var path = require('path')
-let autoRoutes = require('koa-auto-routes')
-let mysql = require('mysql');
+const express = require('express');
+const path = require('path')
+const mysql = require('mysql');
 
-let connection = mysql.createConnection({
+const connection = mysql.createConnection({
     host: 'remotemysql.com',
     user: 'cfxpQFeAgl',
     password: '5wLicDMtkr',
@@ -14,18 +11,18 @@ let connection = mysql.createConnection({
 
 connection.connect();
 
-let app = new Koa()
+const app = express();
 
 connection.query('SELECT 1 + 1 AS solution', (error, results, fields) => {
     if (error) throw error;
     console.log('If this prints "2", then the database is online and working. ', results[0].solution);
 });
 
-app
-    .use(cors())
-    .use(bodyparser())
-
-autoRoutes(app, path.join(__dirname, 'routers'))
+app.get('/api/test', (req, res) => {
+    res.json({
+        'Key': 'Value'
+    });
+})
 
 app.listen(5000)
 console.log('Server running on port 5000')
