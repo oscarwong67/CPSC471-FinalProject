@@ -55,10 +55,11 @@ connection.query('CREATE TABLE SCOOTER (Vehicle_id INT AUTO_INCREMENT NOT NULL P
                                         });
 
 connection.query('CREATE TABLE USER (User_id INT NOT NULL PRIMARY KEY, ' +
-                                    'Phone_no INT NOT NULL, ' +
+                                    'Phone_no VARCHAR(12) NOT NULL, ' +
                                     'Fname VARCHAR(15) NOT NULL, ' +
                                     'Lname VARCHAR(15) NOT NULL, ' +
-                                    'Email VARCHAR(20) NOT NULL)', (error, results, fields) => {
+                                    'Email VARCHAR(20) NOT NULL' + 
+                                    'Password VARCHAR(20) NOT NULL)', (error, results, fields) => {
                                       if (error) throw error;
                                     });
 
