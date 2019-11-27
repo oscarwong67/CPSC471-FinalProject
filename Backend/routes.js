@@ -6,12 +6,15 @@ routes.get('/api/', (req, res) => {
 });
 
 routes.post('/api/login', (req, res) => {
-  db.query('SELECT * FROM USER WHERE Email=? AND Password=?', [req.query.email, req.query.password], (error, results) => {
-    //  need find out what's wrong with result
-    if (error) {
-      console.log(error.message);
+  const email = req.body.email;
+  const password = req.body.password;
+  db.query('SELECT * FROM USER WHERE Email=? AND Password=?', [email, password], (error, results) => {
+    if (error || !results || results.length === 0) {
+      if (error) {
+        console.log(error);
+      }
       res.status(400).json({ message: 'Failure!' });  //  example of error case for HTTP 400 (bad request)
-    } else {
+    } else if (results) {
       res.status(200).json({
         'success': true,
         'accountId': results[0].User_id
