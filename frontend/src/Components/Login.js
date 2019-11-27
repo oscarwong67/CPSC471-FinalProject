@@ -14,20 +14,30 @@ class Login extends Component{
               placeholder='Email'
               onChange= {this.handleEmailChange}
             />
+
             <Form.Input
               icon='lock'
               iconPosition='left'
               label='Password'
               type='password'
+              onChange= {this.handlePasswordChange}
             />
 
-            <Button content='Login' primary />
+            <Button 
+            content='Login' 
+            icon = 'sign-in'
+            onClick= {} //TODO later
+            primary />
           </Form>
         </Grid.Column>
 
         <Grid.Column verticalAlign='middle'>
-          <Button content='Sign up' icon='signup' size='big' />
+          <Button 
+          content='Sign up' 
+          icon='signup' 
+          size='big' /> 
         </Grid.Column>
+
       </Grid>
 
       <Divider vertical>Or</Divider>
@@ -35,6 +45,10 @@ class Login extends Component{
   )
 
   handleEmailChange(event){
+    //set state
+  }
+
+  handlePasswordChange(event){
     //set state
   }
 }
