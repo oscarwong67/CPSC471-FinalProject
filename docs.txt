@@ -1,4 +1,4 @@
-Koa (backend/server/controller stuff): https://devdocs.io/koa/
+Express(backend/server/controller stuff): https://expressjs.com/en/api.html#req
 Mysql NPM package (database controller): https://www.npmjs.com/package/mysql#introduction
 React (frontend javascript library): https://reactjs.org/docs/getting-started.html
 Semantic UI React (prebuilt components for React): https://react.semantic-ui.com/usage
