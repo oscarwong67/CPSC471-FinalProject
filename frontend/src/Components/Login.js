@@ -1,7 +1,7 @@
 import React from 'react'
 import { Button, Divider, Form, Grid, Segment } from 'semantic-ui-react'
 
-class Login extends Component{
+class Login extends React.Component{
   render = () => (
     <Segment placeholder>
       <Grid columns={2} relaxed='very' stackable>
@@ -29,7 +29,6 @@ class Login extends Component{
           <Button content='Sign up' icon='signup' size='big' />
         </Grid.Column>
       </Grid>
-
       <Divider vertical>Or</Divider>
     </Segment>
   )
@@ -41,4 +40,4 @@ class Login extends Component{
 
 
 
-export default DividerExampleVerticalForm
+export default Login;
