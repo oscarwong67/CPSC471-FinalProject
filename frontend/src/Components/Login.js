@@ -24,6 +24,7 @@ class Login extends React.Component {
               onChange={this.handleEmailChange}
               value={this.state.email}
             />
+
             <Form.Input
               icon='lock'
               iconPosition='left'
@@ -33,13 +34,17 @@ class Login extends React.Component {
               onChange={this.handlePasswordChange}
               value={this.state.password}
             />
-            <Button content='Login' primary onClick={this.submitLogin} />
+            <Button content='Login' icon='sign-in' primary onClick={this.submitLogin} />
           </Form>
         </Grid.Column>
 
         <Grid.Column verticalAlign='middle'>
-          <Button content='Sign up' icon='signup' size='big' />
+          <Button
+            content='Sign up'
+            icon='signup'
+            size='big' />
         </Grid.Column>
+
       </Grid>
       <Divider vertical>Or</Divider>
     </Segment>
@@ -67,6 +72,10 @@ class Login extends React.Component {
     this.setState({
       password: event.target.value
     });
+  }
+
+  handlePasswordChange(event) {
+    //set state
   }
 }
 
