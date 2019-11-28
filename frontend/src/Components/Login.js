@@ -146,7 +146,7 @@ class Login extends React.Component {
 
   submitSignup = () => {
     if (!validateInputs([this.state.email, this.state.password, this.state.firstName,
-    this.state.lastName, this.state.phoneNumber, this.state.accountType]) ||
+    this.state.lastName, this.state.phone, this.state.accountType]) ||
       (this.state.accountType === 'Driver' &&
         !validateInputs([this.state.carState.licensePlate, this.state.carState.seats,
         this.state.carState.make, this.state.carState.color]))) {
@@ -156,7 +156,7 @@ class Login extends React.Component {
     }
 
     axios.post('http://localhost:5000/api/signup', {
-      ...this.state
+      ...this.state, ...this.state.carState
     }).then((response) => {
       this.handleAuthSuccess(response);
     }).catch((error) => {
