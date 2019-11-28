@@ -1,25 +1,23 @@
 import React from 'react';
-import { Button } from 'semantic-ui-react'
-import { Image } from 'semantic-ui-react'
-import Dashboard from '../Dashboard'
+import { Button, Image } from 'semantic-ui-react';
+import Dashboard from '../Dashboard';
+import mapImg from './../../images/map.png';
 
-class CustomerDashboard extends React.Component{
-  render = () =>(
+class CustomerDashboard extends React.Component {
+  render = () => (
     <div>
       <Dashboard />
-      <Button.Group 
-      widths = 'sixteen'>
         <Button
-        icon = 'car'>
+          icon='car'>
           Book Car Ride
         </Button>
         <Button
-        icon = 'bicycle'>
+          icon='bicycle'>
           Rent Vehicle
-        </Button>
-        <Image src='../../../public/map' fluid />
-      </Button.Group>
-
+        </Button>        
+      <Image src={mapImg} size='massive' centered bordered />
     </div>
   );
 }
+
+export default CustomerDashboard;

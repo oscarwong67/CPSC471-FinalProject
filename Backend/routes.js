@@ -17,7 +17,8 @@ routes.post('/api/login', (req, res) => {
     } else if (results) {
       res.status(200).json({
         'success': true,
-        'accountId': results[0].User_id
+        'accountId': results[0].User_id,
+        'accountType': results[0].accountType
       });
     }
   });

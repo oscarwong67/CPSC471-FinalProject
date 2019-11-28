@@ -1,7 +1,6 @@
 import React from 'react';
-import { Input } from 'semantic-ui-react'
-import { Button } from 'semantic-ui-react'
-import Dashboard from '../Dashboard'
+import { Input, Button } from 'semantic-ui-react'
+import Dashboard from '../../Dashboard'
 
 class ChargerDashboard extends React.Component{
 
@@ -20,5 +19,6 @@ class ChargerDashboard extends React.Component{
     </div>
     
   );
-
 }
+
+export default ChargerDashboard;
