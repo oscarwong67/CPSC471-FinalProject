@@ -24,6 +24,52 @@ routes.post('/api/login', (req, res) => {
   });
 });
 
+routes.post('/api/signup', (req, res) => {
+  const email = req.body.email;
+  const password = req.body.password;
+  const firstName = req.body.firstName;
+  const lastName = req.body.lastName;
+  const number = req.body.phone;
+  const accountType = req.body.accountType;
+  try {
+    db.query('INSERT INTO USER SET ?', {
+      Phone_no: number, Fname: firstName, Lname: lastName, Email: email, Password: password, accountType: accountType
+    }, (error, results) => {
+      if (error) { throw error; }
+
+      const accountID = results.User_id;
+      if (accountType === "Driver") {
+        const licensePlate = req.body.carState.licensePlate;
+        const color = req.body.carState.color;
+        const make = req.body.carState.make;
+        const seats = req.body.carState.seats;
+        db.query('INSERT INTO VEHICLE', (error, results) => {
+          if (error) { throw error; }
+          const vehicleID = results.vehicle_id;
+        });
+        db.query('INSERT INTO DRIVER SET ?', {User_id: results.insertId}, (error, results) => {
+          if (error) { throw error; }
+        });
+      } else if (accountType === "Charger") {
+        db.query('INSERT INTO CHARGER SET ?', { User_id: accountID }, (error, results) => {
+          if (error) { throw error; }
+        });
+      } else if (accountType === "Custommer") {
+
+      } else {
+        console.log("no account type recognized\n");
+        res.status(400).json({ message: 'Failure!' });
+      }
+    })
+  }
+  catch (error) {
+    console.log(error);
+    res.status(400).json({
+      'success': false
+    });
+  }
+});
+
 routes.get('/api/accountBalance', (req, res) => {
   //  use req.query.accountId or smth
 
