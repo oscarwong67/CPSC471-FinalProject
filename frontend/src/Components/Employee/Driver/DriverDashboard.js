@@ -1,7 +1,6 @@
 import React from 'react';
-import { Input } from 'semantic-ui-react'
-import { Button } from 'semantic-ui-react'
-import Dashboard from '../Dashboard'
+import { Input, Button } from 'semantic-ui-react'
+import Dashboard from '../../Dashboard'
 
 class DriverDashboard extends React.Component{
   renderCurrentTrip = () => {
@@ -11,14 +10,17 @@ class DriverDashboard extends React.Component{
       </div>
     );
   }
+
   render = () => (
     <div>
+      <Dashboard />
       {
         true ?
-        renderCurrentTrip()
-        : renderWaitingForTrip()
+        this.renderCurrentTrip()
+        : this.renderWaitingForTrip()
       }
     </div>
   )
-
 }
+
+export default DriverDashboard;

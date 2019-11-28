@@ -8,146 +8,141 @@ var connection = mysql.createConnection({
  
 connection.connect();
 
-connection.query('CREATE TABLE VEHICLE (Vehicle_id INT AUTO_INCREMENT NOT NULL PRIMARY KEY)', (error, results, fields) => {
+connection.query('CREATE TABLE VEHICLE (vehicle_id INT AUTO_INCREMENT NOT NULL PRIMARY KEY)', (error, results, fields) => {
   if (error) throw error;
 });
 
-connection.query('CREATE TABLE CAR (Vehicle_id INT AUTO_INCREMENT NOT NULL PRIMARY KEY, ' + 
-                                    'License_plate VARCHAR(8) NOT NULL, ' + 
-                                    'Num_seats INT NOT NULL, ' +
-                                    'Make VARCHAR(100), ' +
-                                    'Color VARCHAR(20) NOT NULL, ' +
-                                    'FOREIGN KEY(Vehicle_id) REFERENCES VEHICLE(Vehicle_id) ON DELETE CASCADE ON UPDATE CASCADE)', (error, results, fields) => {
+connection.query('CREATE TABLE CAR (vehicle_id INT AUTO_INCREMENT NOT NULL PRIMARY KEY, ' + 
+                                    'license_plate VARCHAR(8) NOT NULL, ' + 
+                                    'num_seats INT NOT NULL, ' +
+                                    'make VARCHAR(100), ' +
+                                    'color VARCHAR(20) NOT NULL, ' +
+                                    'FOREIGN KEY(vehicle_id) REFERENCES VEHICLE(vehicle_id) ON DELETE CASCADE ON UPDATE CASCADE)', (error, results, fields) => {
                                       if (error) throw error;
                                     });
 
-connection.query('CREATE TABLE LOCATION (Latitude FLOAT NOT NULL, ' +
-                                        'Longitude FLOAT NOT NULL, ' +
-                                        'Street VARCHAR(15) NOT NULL, ' +
-                                        'City VARCHAR(15) NOT NULL, ' +
-                                        'Postal_code CHAR(6) NOT NULL, ' +
-                                        'House_no INT NOT NULL, ' +
-                                        'PRIMARY KEY (Latitude, Longitude))' , (error, results, fields) => {
+connection.query('CREATE TABLE LOCATION (latitude FLOAT NOT NULL, ' +
+                                        'longitude FLOAT NOT NULL, ' +
+                                        'street VARCHAR(15) NOT NULL, ' +
+                                        'city VARCHAR(15) NOT NULL, ' +
+                                        'postal_code CHAR(6) NOT NULL, ' +
+                                        'house_no INT NOT NULL, ' +
+                                        'PRIMARY KEY (latitude, longitude))' , (error, results, fields) => {
                                           if (error) throw error;
                                         });
 
-connection.query('CREATE TABLE ELECTRIC_VEHICLE (Vehicle_id INT AUTO_INCREMENT NOT NULL, ' +
-                                                'Loc_latitude FLOAT NOT NULL, ' +
-                                                'Loc_longitude FLOAT NOT NULL, ' +
-                                                'Availability BOOLEAN NOT NULL, ' +
-                                                'Battery_percentage INT NOT NULL, ' + 
-                                                'PRIMARY KEY (Vehicle_id, Loc_latitude, Loc_longitude), ' +
-                                                'FOREIGN KEY (Vehicle_id) REFERENCES VEHICLE (Vehicle_id) ON DELETE CASCADE ON UPDATE CASCADE, ' +
-                                                'FOREIGN KEY (Loc_latitude, Loc_longitude) REFERENCES LOCATION (Latitude, Longitude) ON DELETE CASCADE ON UPDATE CASCADE)', (error, results, fields) => {
+connection.query('CREATE TABLE ELECTRIC_VEHICLE (vehicle_id INT AUTO_INCREMENT NOT NULL, ' +
+                                                'loc_latitude FLOAT NOT NULL, ' +
+                                                'loc_longitude FLOAT NOT NULL, ' +
+                                                'availability BOOLEAN NOT NULL, ' +
+                                                'battery_percentage INT NOT NULL, ' + 
+                                                'PRIMARY KEY (vehicle_id, loc_latitude, loc_longitude), ' +
+                                                'FOREIGN KEY (vehicle_id) REFERENCES VEHICLE (vehicle_id) ON DELETE CASCADE ON UPDATE CASCADE, ' +
+                                                'FOREIGN KEY (loc_latitude, loc_longitude) REFERENCES LOCATION (latitude, longitude) ON DELETE CASCADE ON UPDATE CASCADE)', (error, results, fields) => {
                                                   if (error) throw error;
                                                 });
      
-connection.query('CREATE TABLE BIKE (Vehicle_id INT AUTO_INCREMENT NOT NULL PRIMARY KEY, ' +
-                                    'Has_basket BOOLEAN NOT NULL, ' + 
-                                    'FOREIGN KEY(Vehicle_id) REFERENCES ELECTRIC_VEHICLE(Vehicle_id) ON DELETE CASCADE ON UPDATE CASCADE)', (error, results, fields) => {
+connection.query('CREATE TABLE BIKE (vehicle_id INT AUTO_INCREMENT NOT NULL PRIMARY KEY, ' +
+                                    'has_basket BOOLEAN NOT NULL, ' + 
+                                    'FOREIGN KEY(vehicle_id) REFERENCES ELECTRIC_VEHICLE(vehicle_id) ON DELETE CASCADE ON UPDATE CASCADE)', (error, results, fields) => {
                                       if (error) throw error;
                                     });
 
-connection.query('CREATE TABLE SCOOTER (Vehicle_id INT AUTO_INCREMENT NOT NULL PRIMARY KEY, ' +
-                                        'Scooter_model INT NOT NULL, ' +
-                                        'FOREIGN KEY (Vehicle_id) REFERENCES VEHICLE(Vehicle_id) ON DELETE CASCADE ON UPDATE CASCADE)', (error, results, fields) => {
+connection.query('CREATE TABLE SCOOTER (vehicle_id INT AUTO_INCREMENT NOT NULL PRIMARY KEY, ' +
+                                        'scooter_model INT NOT NULL, ' +
+                                        'FOREIGN KEY (vehicle_id) REFERENCES VEHICLE(vehicle_id) ON DELETE CASCADE ON UPDATE CASCADE)', (error, results, fields) => {
                                           if (error) throw error;
                                         });
 
-connection.query('CREATE TABLE USER (User_id INT NOT NULL PRIMARY KEY, ' +
-                                    'Phone_no VARCHAR(12) NOT NULL, ' +
-                                    'Fname VARCHAR(15) NOT NULL, ' +
-                                    'Lname VARCHAR(15) NOT NULL, ' +
-                                    'Email VARCHAR(20) NOT NULL' + 
-                                    'Password VARCHAR(20) NOT NULL)', (error, results, fields) => {
+connection.query('CREATE TABLE USER (user_id INT AUTO_INCREMENT NOT NULL PRIMARY KEY, ' +
+                                    'phone_no VARCHAR(12) NOT NULL, ' +
+                                    'fname VARCHAR(15) NOT NULL, ' +
+                                    'lname VARCHAR(15) NOT NULL, ' +
+                                    'email VARCHAR(30) NOT NULL,' + 
+                                    'password VARCHAR(20) NOT NULL, ' +
+                                    'accountType VARCHAR(20) NOT NULL)', (error, results, fields) => {
                                       if (error) throw error;
                                     });
 
-connection.query('CREATE TABLE CUSTOMER (User_id INT NOT NULL PRIMARY KEY, ' + 
-                                        'Customer_rating INT, ' +
-                                        'FOREIGN KEY (User_id) REFERENCES USER(User_id) ON DELETE CASCADE ON UPDATE CASCADE)', (error, results, fields) => {
+connection.query('CREATE TABLE CUSTOMER (user_id INT NOT NULL PRIMARY KEY, ' + 
+                                        'customer_rating INT, ' +
+                                        'FOREIGN KEY (user_id) REFERENCES USER(user_id) ON DELETE CASCADE ON UPDATE CASCADE)', (error, results, fields) => {
                                           if (error) throw error;
                                         });
 
-connection.query('CREATE TABLE EMPLOYEE (User_id INT NOT NULL PRIMARY KEY, ' +
-                                        'SSN INT NOT NULL, ' +
-                                        'FOREIGN KEY (User_id) REFERENCES USER (User_id) ON DELETE CASCADE ON UPDATE CASCADE)', (error, results, fields) => {
-                                          if (error) throw error;
-                                        });
-
-connection.query('CREATE TABLE PAYMENT_ACCOUNT (User_id INT NOT NULL PRIMARY KEY, ' +
-                                                'Balance FLOAT NOT NULL, ' +
-                                                'Bank_account INT NOT NULL, ' +
-                                                'FOREIGN KEY (User_id) REFERENCES USER (User_id) ON DELETE CASCADE ON UPDATE CASCADE)', (error, results, fields) => {
+connection.query('CREATE TABLE PAYMENT_ACCOUNT (user_id INT NOT NULL PRIMARY KEY, ' +
+                                                'balance FLOAT NOT NULL, ' +
+                                                'bank_account INT NOT NULL, ' +
+                                                'FOREIGN KEY (user_id) REFERENCES USER (user_id) ON DELETE CASCADE ON UPDATE CASCADE)', (error, results, fields) => {
                                                   if (error) throw error;
                                                 });
 
 
-connection.query('CREATE TABLE CREDIT_CARD (User_id INT NOT NULL, '+ 
-                                            'Credit_card INT NOT NULL, ' +
-                                            'PRIMARY KEY (User_id, Credit_card), ' +
-                                            'FOREIGN KEY (User_id) REFERENCES PAYMENT_ACCOUNT (User_id) ON DELETE CASCADE ON UPDATE CASCADE)', (error, results, fields) => {
+connection.query('CREATE TABLE CREDIT_CARD (user_id INT NOT NULL, '+ 
+                                            'credit_card INT NOT NULL, ' +
+                                            'PRIMARY KEY (user_id, credit_card), ' +
+                                            'FOREIGN KEY (user_id) REFERENCES PAYMENT_ACCOUNT (user_id) ON DELETE CASCADE ON UPDATE CASCADE)', (error, results, fields) => {
                                               if (error) throw error;
                                             });
 
-connection.query('CREATE TABLE CHARGER (User_id INT NOT NULL PRIMARY KEY, ' +
-                                        'Charge_price_per_wh FLOAT NOT NULL, ' +
-                                        'FOREIGN KEY (User_id) REFERENCES EMPLOYEE (User_id) ON DELETE CASCADE ON UPDATE CASCADE)', (error, results, fields) => {
+connection.query('CREATE TABLE CHARGER (user_id INT NOT NULL PRIMARY KEY, ' +
+                                        'charge_price_per_percent FLOAT NOT NULL, ' +
+                                        'FOREIGN KEY (user_id) REFERENCES USER (user_id) ON DELETE CASCADE ON UPDATE CASCADE)', (error, results, fields) => {
                                           if (error) throw error;
                                         });
 
-connection.query('CREATE TABLE CHARGES (C_User_id INT NOT NULL, ' +
-                                        'Vehicle_id INT NOT NULL, ' +
-                                        'Percentage_charge_by INT NOT NULL, ' +
-                                        'PRIMARY KEY (C_User_id, Vehicle_id), ' +
-                                        'FOREIGN KEY (C_User_id) REFERENCES CHARGER (User_id) ON DELETE CASCADE ON UPDATE CASCADE, ' +
-                                        'FOREIGN KEY (Vehicle_id) REFERENCES ELECTRIC_VEHICLE (Vehicle_id) ON DELETE CASCADE ON UPDATE CASCADE)', (error, results, fields) => {
+connection.query('CREATE TABLE CHARGES (c_user_id INT NOT NULL, ' +
+                                        'vehicle_id INT NOT NULL, ' +
+                                        'percentage_charged_by INT NOT NULL, ' +
+                                        'PRIMARY KEY (c_user_id, vehicle_id), ' +
+                                        'FOREIGN KEY (c_user_id) REFERENCES CHARGER (user_id) ON DELETE CASCADE ON UPDATE CASCADE, ' +
+                                        'FOREIGN KEY (vehicle_id) REFERENCES ELECTRIC_VEHICLE (vehicle_id) ON DELETE CASCADE ON UPDATE CASCADE)', (error, results, fields) => {
                                           if (error) throw error;
                                         });
 
-connection.query('CREATE TABLE DRIVER (User_id INT NOT NULL, ' + 
-                                      'Vehicle_id INT NOT NULL, ' +
-                                      'Driver_rating INT, ' +
-                                      'Availability BOOLEAN NOT NULL, ' +
-                                      'PRIMARY KEY (User_id, Vehicle_id), ' +
-                                      'FOREIGN KEY (User_id) REFERENCES EMPLOYEE (User_id) ON DELETE CASCADE ON UPDATE CASCADE, ' + 
-                                      'FOREIGN KEY (Vehicle_id) REFERENCES CAR(Vehicle_id) ON DELETE CASCADE ON UPDATE CASCADE)', (error, results, fields) => { 
+connection.query('CREATE TABLE DRIVER (user_id INT NOT NULL, ' + 
+                                      'vehicle_id INT NOT NULL, ' +
+                                      'driver_rating INT, ' +
+                                      'availability BOOLEAN NOT NULL, ' +
+                                      'PRIMARY KEY (user_id, vehicle_id), ' +
+                                      'FOREIGN KEY (user_id) REFERENCES USER (user_id) ON DELETE CASCADE ON UPDATE CASCADE, ' + 
+                                      'FOREIGN KEY (vehicle_id) REFERENCES CAR(vehicle_id) ON DELETE CASCADE ON UPDATE CASCADE)', (error, results, fields) => { 
                                         if (error) throw error;
                                       });
 
-connection.query('CREATE TABLE TRIP (Trip_id INT NOT NULL, ' + 
-                                      'Pickup_latitude FLOAT NOT NULL, ' +
-                                      'Dest_latitude FLOAT NOT NULL, ' +
-                                      'Pickup_longitude FLOAT NOT NULL, ' +
-                                      'Dest_longitude FLOAT NOT NULL, ' +
-                                      'Distance FLOAT NOT NULL, ' +
-                                      'Fare FLOAT NOT NULL, ' +
-                                      'Start_time TIME NOT NULL, ' +
-                                      'End_time TIME NOT NULL, ' +
-                                      'Duration INT NOT NULL, ' +
-                                      'Date DATE NOT NULL, ' +
-                                      'PRIMARY KEY (Trip_id, Pickup_latitude, Dest_latitude, Pickup_longitude, Dest_longitude), ' +
-                                      'FOREIGN KEY (Pickup_latitude, Pickup_longitude) REFERENCES LOCATION (Latitude, Longitude) ON DELETE CASCADE ON UPDATE CASCADE,  ' + 
-                                      'FOREIGN KEY (Dest_latitude, Dest_longitude) REFERENCES LOCATION (Latitude, Longitude) ON DELETE CASCADE ON UPDATE CASCADE)', (error, results, fields) => {
+connection.query('CREATE TABLE TRIP (trip_id INT AUTO_INCREMENT NOT NULL, ' + 
+                                      'pickup_latitude FLOAT NOT NULL, ' +
+                                      'dest_latitude FLOAT NOT NULL, ' +
+                                      'pickup_longitude FLOAT NOT NULL, ' +
+                                      'dest_longitude FLOAT NOT NULL, ' +
+                                      'distance FLOAT NOT NULL, ' +
+                                      'fare FLOAT NOT NULL, ' +
+                                      'start_time TIME NOT NULL, ' +
+                                      'end_time TIME NOT NULL, ' +
+                                      'duration INT NOT NULL, ' +
+                                      'date DATE NOT NULL, ' +
+                                      'PRIMARY KEY (trip_id, pickup_latitude, dest_latitude, pickup_longitude, dest_longitude), ' +
+                                      'FOREIGN KEY (pickup_latitude, pickup_longitude) REFERENCES LOCATION (latitude, longitude) ON DELETE CASCADE ON UPDATE CASCADE,  ' + 
+                                      'FOREIGN KEY (dest_latitude, dest_longitude) REFERENCES LOCATION (latitude, longitude) ON DELETE CASCADE ON UPDATE CASCADE)', (error, results, fields) => {
                                         if (error) throw error;
                                       });
 
   connection.query('CREATE TABLE CAR_TRIP (trip_id INT NOT NULL PRIMARY KEY, ' +
-                                          'Driver_id INT NOT NULL, ' +
-                                          'Fuel_used INT NOT NULL, ' +
-                                          'Cleanup_fee FLOAT NOT NULL, ' +
-                                          'FOREIGN KEY (trip_id) REFERENCES TRIP (Trip_id) ON DELETE CASCADE ON UPDATE CASCADE, ' +
-                                          'FOREIGN KEY (Driver_id) REFERENCES DRIVER (User_id) ON DELETE CASCADE ON UPDATE CASCADE)', (error, results, fields) => {
+                                          'driver_id INT NOT NULL, ' +
+                                          'fuel_used INT NOT NULL, ' +
+                                          'cleanup_fee FLOAT NOT NULL, ' +
+                                          'FOREIGN KEY (trip_id) REFERENCES TRIP (trip_id) ON DELETE CASCADE ON UPDATE CASCADE, ' +
+                                          'FOREIGN KEY (driver_id) REFERENCES DRIVER (user_id) ON DELETE CASCADE ON UPDATE CASCADE)', (error, results, fields) => {
                                             if (error) throw error;
                                           });
 
 connection.query('CREATE TABLE TAKES (Trip_id INT NOT NULL, ' +
-                                      'User_id INT NOT NULL, ' +
-                                      'User_who_initiated_trip_id INT NOT NULL, ' +
-                                      'PRIMARY KEY (Trip_id, User_id), ' +
-                                      'FOREIGN KEY (Trip_id) REFERENCES TRIP (Trip_id) ON DELETE CASCADE ON UPDATE CASCADE, ' +
-                                      'FOREIGN KEY (User_id) REFERENCES CUSTOMER(User_id) ON DELETE CASCADE ON UPDATE CASCADE, ' +
-                                      'FOREIGN KEY (User_who_initiated_trip_id) REFERENCES CUSTOMER (User_id) ON DELETE CASCADE ON UPDATE CASCADE)', (error, results, fields) => {
+                                      'user_id INT NOT NULL, ' +
+                                      'user_who_initiated_trip_id INT NOT NULL, ' +
+                                      'PRIMARY KEY (trip_id, user_id), ' +
+                                      'FOREIGN KEY (trip_id) REFERENCES TRIP (trip_id) ON DELETE CASCADE ON UPDATE CASCADE, ' +
+                                      'FOREIGN KEY (user_id) REFERENCES CUSTOMER(user_id) ON DELETE CASCADE ON UPDATE CASCADE, ' +
+                                      'FOREIGN KEY (user_who_initiated_trip_id) REFERENCES CUSTOMER (user_id) ON DELETE CASCADE ON UPDATE CASCADE)', (error, results, fields) => {
                                         if (error) throw error;
                                       });
 connection.end();
