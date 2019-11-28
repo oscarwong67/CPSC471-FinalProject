@@ -10,11 +10,13 @@ class CustomerDashboard extends React.Component{
       <Button.Group 
       widths = 'sixteen'>
         <Button
-        icon = 'car'>
-          Book Car Ride
+        icon = 'car'
+        onClick = {this.bookCarTrip}>
+          Book Car Trip
         </Button>
         <Button
-        icon = 'bicycle'>
+        icon = 'bicycle'
+        onClick = {this.rentVehicle}>
           Rent Vehicle
         </Button>
         <Image src='../../../public/map' fluid />
@@ -22,4 +24,13 @@ class CustomerDashboard extends React.Component{
 
     </div>
   );
+
+  bookCarTrip = () =>{
+    //todo
+  }
+
+  rentVehicle = () => {
+    //todo
+  }
+
 }
