@@ -1,9 +1,9 @@
 import React from 'react';
 import './App.css';
-import { Header, Button } from 'semantic-ui-react';
+import { Header } from 'semantic-ui-react';
 import { Router, Route, Switch } from 'react-router';
 import Login from './Components/Login';
-import Dashboard from './Components/Dashboard';
+import DashboardPicker from './Components/DashboardPicker';
 import PrivateRoute from './Components/PrivateRoute';
 import SignoutButton from './Components/SignoutButton'
 import history from './history';
@@ -19,11 +19,11 @@ function App() {
         <Route>
           <Switch>
             <Route path="/login" component={Login} />
-            <PrivateRoute exact path="/" component={Dashboard} />
+            <PrivateRoute exact path="/" component={DashboardPicker} />
           </Switch>
-        </Route>        
+        </Route>
         <PrivateRoute path="/" component={SignoutButton} />
-        </Router>
+      </Router>
     </div>
   );
 }
