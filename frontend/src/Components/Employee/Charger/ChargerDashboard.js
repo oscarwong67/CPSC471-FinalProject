@@ -5,10 +5,7 @@ import Dashboard from '../../Dashboard'
 class ChargerDashboard extends React.Component{
   constructor(props){
     super (props);
-    percentage: ''
-    vehicleId: ''
   }
-
   render = () => (
     <div>
       <Dashboard/>
@@ -24,25 +21,21 @@ class ChargerDashboard extends React.Component{
       onClick = { this.submitCharge }>
         Enter
       </Button>
-    </div>
-    
+    </div>    
   );
-}
-
   submitCharge = () => {
     //todo
   }
-
   handleUpdateVehicleId = (event) => {
     this.setState({
       vehicleId: event.target.value
     })
   }
-
   handleUpdateVehicleId = (event) => {
     this.setState({
       percentage: event.target.value
     })
   }
-
 }
+
+export default ChargerDashboard;

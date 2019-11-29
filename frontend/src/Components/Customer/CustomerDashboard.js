@@ -2,6 +2,7 @@ import React from 'react';
 import { Button, Image } from 'semantic-ui-react';
 import Dashboard from '../Dashboard';
 import mapImg from './../../images/map.png';
+import history from '../../history';
 
 class CustomerDashboard extends React.Component {
   render = () => (
@@ -22,7 +23,7 @@ class CustomerDashboard extends React.Component {
   );
 
   bookCarTrip = () =>{
-    //todo
+    history.push('/bookCarTrip');
   }
 
   rentVehicle = () => {
@@ -30,3 +31,5 @@ class CustomerDashboard extends React.Component {
   }
 
 }
+
+export default CustomerDashboard;
