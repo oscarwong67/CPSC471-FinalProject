@@ -1,7 +1,7 @@
 {
-  "name": "app",
+  "name": "Ryde",
   "version": "1.0.0",
-  "description": "a app based on koa-base-boilerplate",
+  "description": "Like Lime and Uber but CPSC 471 Edition",
   "main": "app.js",
   "dependencies": {
     "babel-core": "^6.23.1",
@@ -16,7 +16,7 @@
   },
   "devDependencies": {},
   "scripts": {
-    "start": "node start.js"
+    "start": "node start"
   },
   "author": "",
   "license": "ISC"

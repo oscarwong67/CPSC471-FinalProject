@@ -99,4 +99,8 @@ routes.post('/api/rentElectricVehicle'), (req, res) => {
   }
 }
 
+routes.post('/api/bookCarTrip', (req, res) => {
+  
+});
+
 module.exports = routes;
