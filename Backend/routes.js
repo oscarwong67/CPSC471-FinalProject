@@ -109,13 +109,16 @@ routes.post('/api/chargeElectricVehicle', (req, res) => {
     if (error) throw error;
     db.query('SELECT battery_percentage FROM ELECTRIC_VEHICLE WHERE vehicle_id=?', [vehicle_id], (error, results) => {
       if (error) throw error;
-      const oldPercentage = results[0].battery_percentage;
-      const percentage = helper.calcNewPercentage(chargePercentage, oldPercentage);
-      db.query('UPDATE ELECTRIC_VEHICLE SET battery_percentage=? WHERE vehicle_id=?', [percentage, vehicle_id], (error, results)=>{
-        if (error) throw error;
-      })
-      res.status(200).json({success: true});
-      
+      if (results.length > 0){
+        const oldPercentage = results[0].battery_percentage;
+        const percentage = helper.calcNewPercentage(chargePercentage, oldPercentage);
+        db.query('UPDATE ELECTRIC_VEHICLE SET battery_percentage=? WHERE vehicle_id=?', [percentage, vehicle_id], (error, results)=>{
+          if (error) throw error;
+        })
+        res.status(200).json({success: true});
+      } else {
+        res.status(200).json({success: false});
+      }
     })
   }) 
 })
