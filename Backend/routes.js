@@ -100,6 +100,26 @@ routes.post('/api/rentElectricVehicle'), (req, res) => {
   }
 }
 
+routes.post('/api/chargeElectricVehicle', (req, res) => {
+  const user_id = req.body.userId;
+  const vehicle_id = req.body.vehicle_id;
+  const chargePercentage = req.body.percentage;
+
+  db.query('INSERT INTO CHARGES SET ?', {c_user_id: user_id, vehicle_id: vehicle_id, percentage_charged_by: chargePercentage}, (error, results) => {
+    if (error) throw error;
+    db.query('SELECT battery_percentage FROM ELECTRIC_VEHICLE WHERE vehicle_id=?', [vehicle_id], (error, results) => {
+      if (error) throw error;
+      const oldPercentage = results[0].battery_percentage;
+      const percentage = helper.calcNewPercentage(chargePercentage, oldPercentage);
+      db.query('UPDATE ELECTRIC_VEHICLE SET battery_percentage=? WHERE vehicle_id=?', [percentage, vehicle_id], (error, results)=>{
+        if (error) throw error;
+      })
+      res.status(200).json({success: true});
+      
+    })
+  }) 
+})
+
 routes.post('/api/bookCarTrip', (req, res) => {
   const userId = req.body.userId;
   const startLat = req.body.startLatitude;

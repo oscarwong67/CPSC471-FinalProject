@@ -1,40 +1,70 @@
 import React from 'react';
-import { Input, Button } from 'semantic-ui-react'
+import { Input, Button, Form, Group, Icon } from 'semantic-ui-react'
 import Dashboard from '../../Dashboard'
+import history from '../../../history';
+const axios = require('axios');
 
 class ChargerDashboard extends React.Component{
   constructor(props){
-    super (props);
+    super(props);
+    this.state = {
+      vehicleId: '',
+      percentage: ''
+    }
   }
   render = () => (
     <div>
       <Dashboard/>
-      <Input focus placeholder='Enter Vehicle ID'
-      onUpdate = {this.handleUpdateVehicleId} />
-      <Input
-        label={{ basic: true, content: '%' }}
-        labelPosition='right'
-        placeholder='Enter Percentage Charged'
-        onUpdate = {this.handleUpdatePercentage}
-      />
-      <Button
-      onClick = { this.submitCharge }>
-        Enter
-      </Button>
+        <Form>
+          <Form.Group widths='equal'>
+            <Form.Input
+              label='vehicle id'
+              placeholder='vehicle id'
+              value = {this.state.vehicleId}
+              onChange = {this.handleUpdateVehicleId}
+            />
+            <Form.Input
+              label='percentage'
+              icon = 'percent'
+              placeholder='percentage'
+              value = {this.state.percentage}
+              onChange = {this.handleUpdatePercentage}
+            />
+          </Form.Group>
+        </Form>
+
+        <Button
+        size = 'large'
+        onClick = {this.chargeElectricVehicle}>
+          Enter
+        </Button>
     </div>    
   );
-  submitCharge = () => {
-    //todo
+  chargeElectricVehicle = () => {
+    if (this.state.vehicleId === '' || this.state.percentage === ''){
+      alert('Please fill out all forms!');
+    } else if(this.state.percentage <= 0){
+      alert('invalid charge percentage')
+    } else {
+      axios.post('http://localhost:5000/api/chargeElectricVehicle', {
+        vehicle_id: this.state.vehicleId,
+        percentage: this.state.percentage,
+        userId: localStorage.getItem('accountId')
+      }).then((response) => {
+        if(response.data.success){
+          alert('successfully charged');
+          this.setState({vehicleId: '', percentage: ''})
+        } else {
+          alert('failed to charge. Please try again.');
+        }
+      })
+    }
   }
   handleUpdateVehicleId = (event) => {
-    this.setState({
-      vehicleId: event.target.value
-    })
+    this.setState({ vehicleId: event.target.value });
   }
-  handleUpdateVehicleId = (event) => {
-    this.setState({
-      percentage: event.target.value
-    })
+  handleUpdatePercentage = (event) => {
+    this.setState({ percentage: event.target.value });
   }
 }
 

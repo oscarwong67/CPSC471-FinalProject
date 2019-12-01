@@ -8,7 +8,7 @@ class Dashboard extends React.Component{
         <div className='dashboard'>
             <h2>You are now ready for a Ryde.</h2>
             <Button 
-            icon = 'payment'
+            // icon = 'payment'
             width = '16' 
             size = 'massive' >
                 Manage payment account
