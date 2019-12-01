@@ -144,18 +144,18 @@ routes.post('/api/bookCarTrip', (req, res) => {
         // end_time: helper.calcTripEnd(),  // just going to leave this null until customer ends trip 
         date: helper.currentDate()
       }, (error, results) => {
-        if (error) throw error;        
+        if (error) throw error;
         const tripId = results.insertId;
         //  set driver status to unavailable
         db.query('UPDATE DRIVER SET availability=? WHERE user_id=?', [0, driverId], (error, results) => {
           if (error) throw error;
           //  create a new car trip
-          db.query('INSERT INTO CAR_TRIP SET ?', {trip_id: tripId, driver_id: driverId}, (error, results) => {
-            if (error) throw error;                      
+          db.query('INSERT INTO CAR_TRIP SET ?', { trip_id: tripId, driver_id: driverId }, (error, results) => {
+            if (error) throw error;
             //  create a "takes" entity
-            db.query('INSERT INTO TAKES SET ?', {Trip_id: tripId, user_id: userId, user_who_initiated_trip_id: userId}, (error, results) => {
+            db.query('INSERT INTO TAKES SET ?', { Trip_id: tripId, user_id: userId, user_who_initiated_trip_id: userId }, (error, results) => {
               if (error) throw error;
-              res.status(200).json({ success: true });  
+              res.status(200).json({ success: true });
             })
           })
         });
@@ -164,6 +164,20 @@ routes.post('/api/bookCarTrip', (req, res) => {
       res.status(200).json({ success: false, message: 'Sorry, unable to book Ryde. No available drivers.' });
     }
   })
+});
+
+
+routes.get('/api/getCustomerTripStatus', (req, res) => {
+  const userId = req.query.userId;
+  db.query('SELECT * FROM CUSTOMER AS C, TAKES AS TA, TRIP AS TR WHERE end_time IS NULL AND C.user_id=TA.user_id AND TA.Trip_id=TR.trip_id AND C.user_id=?',
+    [userId], (error, results) => {
+      if (error) throw error;
+      if (results.length > 0) {
+        res.status(200).json({ success: true, message: 'Trip loaded successfully.', tripId: results[0].trip_id })
+      } else {
+        res.status(200).json({ success: false, message: 'You are not currently on a trip!' });
+      }
+    });
 });
 
 module.exports = routes;
