@@ -48,7 +48,7 @@ routes.post('/api/signup', (req, res) => {
           if (error) { throw error; }
           const vehicle_id = results.insertId;
           db.query('INSERT INTO CAR SET ?', { vehicle_id, license_plate, num_seats, make, color }, (error, results) => {
-            if (error) throw error;
+            if (error) { throw error; }
             db.query('INSERT INTO DRIVER SET ?', { user_id, vehicle_id }, (error, results) => {
               if (error) { throw error; }
               res.status(200).json({ success: true, message: 'Success!', 'accountId': user_id, 'accountType': 'Driver' });
@@ -80,24 +80,58 @@ routes.post('/api/signup', (req, res) => {
 });
 
 routes.get('/api/accountBalance', (req, res) => {
-  //  use req.query.accountId or smth
-
-  res.json({
-    accountId: '-1',
-    accountBalance: -1
+  const accountID = req.body.accountId;
+  db.query('SELECT credit_card FROM CREDIT_CARD WHERE user_id=?' [accountID], (error, results) => {
+    if (error) {
+      console.log(error);
+      res.status(400).json({ message: 'Failure!'});
+    } else {
+      res.status(200).json({ success: true, message: 'Success!', 'accountId': user_id, 'accountBalance': results.accountBalance });
+    }
   });
-})
+});
 
 routes.post('/api/rentElectricVehicle'), (req, res) => {
   //  use req.query.accountId and req.query.electricVehicleId?
-
-  if (true) {
-    res.status(200).json({
-      message: 'Success!'
-    })
-  } else {
-    res.status(400).json({ message: 'Failure.' });
-  }
+  const accountID = req.body.accountId;
+  const vehicleID = req.body.electricVehicleId;
+  db.query('SELECT * FROM ELECTRIC_VEHICLE WHERE vehicle_id=? AND availability=1', [vehicleID], (error, reuslts) => {
+    if(error) {
+      console.log(error);
+      res.status(400).json({message : 'Faliure!'});
+    } else if(results.length > 0) {
+      const startLat = req.body.startLatitude;
+      const startLng = req.body.startLongitude;
+      db.query('INSERT INTO TRIP SET ?', {
+        pickup_latitude: startLat,
+        pickup_longitude: startLng,
+        start_time: helper.currentTime(),
+        date: helper.currentDate()
+      }, (error, results) => {
+        if(error) {
+          console.log(error);
+          res.status(400).json({message: 'Falure!'});
+        } else {
+          const tripID = results.insertId;
+          db.query('UPDATE ELECTRIC_VEHICLE SET availability=0 WHERE vehicle_id=?', [vehicleID]);
+          db.query('INSERT INTO TAKES SET ?', {
+            Trip_id: tripID,
+            user_id: accountID,
+            user_who_initiated_trip_id: accountID
+          }, (error, results) => {
+            if(error) {
+              console.log(error);
+              res.status(400).json({message: 'Falure!'});
+            } else {
+              res.status(200).json({ success: true });
+            }
+          });
+        }
+      });
+    } else {
+      res.status(200).json({ success: false, message: 'Sorry, vehicle already rented'});
+    }
+  });
 }
 
 routes.post('/api/bookCarTrip', (req, res) => {
