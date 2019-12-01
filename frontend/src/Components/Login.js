@@ -138,9 +138,13 @@ class Login extends React.Component {
       email: this.state.email,
       password: this.state.password
     }).then((response) => {
-      this.handleAuthSuccess(response);
+      if (response.data.success) {
+        this.handleAuthSuccess(response);
+      } else {
+        alert('Login Failed! Invalid username or password');
+      }
     }).catch((error) => {
-      alert('Login Failed! Invalid username or password');
+      alert('Login Failed! Invalid username or password.');
     })
   }
 
@@ -158,7 +162,11 @@ class Login extends React.Component {
     axios.post('http://localhost:5000/api/signup', {
       ...this.state, ...this.state.carState
     }).then((response) => {
-      this.handleAuthSuccess(response);
+      if (response.data.success) {
+        this.handleAuthSuccess(response);
+      } else {
+        alert('Signup failed! Something went wrong.');
+      }
     }).catch((error) => {
       alert('Signup failed! Something went wrong.');
     })

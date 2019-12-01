@@ -2,9 +2,11 @@ import React from 'react';
 import ReactMapGL, { GeolocateControl, Marker } from "react-map-gl";
 import { Grid, Icon, Label, Button } from 'semantic-ui-react'
 import "../../Styles/BookCarTrip.css"
+import history from '../../history';
+const axios = require('axios');
 
 //  thanks uber https://uber.github.io/react-map-gl/#/Examples/dynamic-styling
-
+//  TODO: add button to add other users to the trip so you can split fare
 const defaultWidth = '80vw';
 const defaultHeight = '60vh';
 const defaultZoom = 12;
@@ -33,7 +35,27 @@ class BookCarTrip extends React.Component {
     }
   }
   submitCarTripRequest = () => {
-    //  submit car trip request to backend
+    if (this.state.destinationSelected) {
+      //  submit car trip request to backend
+      axios.post('http://localhost:5000/api/bookCarTrip', {
+        startLatitude: this.state.latitude,
+        startLongitude: this.state.longitude,
+        destLatitude: this.state.destLatitude,
+        destLongitude: this.state.destLongitude,
+        userId: localStorage.getItem('accountId')
+      }).then((response) => {
+        //  handle case of status = 'success'
+        if (response.data.success) {
+          alert('Successfully booked trip. Redirecting you to your dashboard.');
+          history.push('/');
+        } else {
+          alert('Failed to book trip. No available drivers. Please try again later.');
+        }
+      }).catch((error) => {
+        alert('Failed to book trip. No available drivers. Please try again later.');
+        console.error(error.message);
+      });
+    }
   }
   handleUpdatePositionDefaultDestLongitude = (position) => {
     let destLongitude = this.state.destLongitude;
@@ -96,10 +118,10 @@ class BookCarTrip extends React.Component {
         </Marker>
         {
           this.state.destinationSelected ?
-            <Marker className="user-location-marker" 
-              latitude={this.state.destLatitude} 
-              longitude={this.state.destLongitude} 
-              offsetLeft={-20} 
+            <Marker className="user-location-marker"
+              latitude={this.state.destLatitude}
+              longitude={this.state.destLongitude}
+              offsetLeft={-20}
               offsetTop={-10}
               draggable
               onDragEnd={this.handleDragEnd}
