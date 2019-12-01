@@ -53,7 +53,7 @@ class BookCarTrip extends React.Component {
         }
       }).catch((error) => {
         alert('Failed to book trip. No available drivers. Please try again later.');
-        console.error(error.message);
+        console.error(error);
       });
     }
   }

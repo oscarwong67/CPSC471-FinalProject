@@ -28,4 +28,12 @@ const calcTripEnd = (distanceInKm) => {
     return moment(Date.now()).add(tripTimeInHours, 'hours').format('HH:mm:ss');
 }
 
-module.exports = { calcDistanceKM, calcFare, currentTime, currentDate, calcTripEnd }
+const calcNewPercentage = (chargePercentage, oldPercentage) => {
+    const result = parseInt(oldPercentage, 10) + parseInt(chargePercentage, 10);
+    if (result >= 100){
+        return 100;
+    } 
+    return result;
+}
+
+module.exports = { calcDistanceKM, calcFare, currentTime, currentDate, calcTripEnd, calcNewPercentage }
