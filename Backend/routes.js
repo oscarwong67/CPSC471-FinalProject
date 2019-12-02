@@ -95,50 +95,32 @@ routes.get('/api/getCustomerCreditCard', async (req, res) => {
   }
 });
 
-routes.post('/api/rentElectricVehicle'), (req, res) => {
+routes.post('/api/rentElectricVehicle'), async(req, res) => {
   //  use req.query.accountId and req.query.electricVehicleId?
   const accountID = req.body.accountId;
   const vehicleID = req.body.electricVehicleId;
-  db.query('SELECT * FROM ELECTRIC_VEHICLE WHERE vehicle_id=? AND availability=1', [vehicleID], (error, results) => {
-    if (error) {
-      console.log(error);
-      res.status(400).json({ message: 'Faliure!' });
-    } else if (results.length > 0) {
-      const startLat = req.body.startLatitude;
-      const startLng = req.body.startLongitude;
-      db.query('INSERT INTO TRIP SET ?', {
-        pickup_latitude: startLat,
-        pickup_longitude: startLng,
-        start_time: helper.currentTime(),
-        date: helper.currentDate()
-      }, (error, results) => {
-        if (error) {
-          console.log(error);
-          res.status(400).json({ message: 'Falure!' });
-        } else {
-          const tripID = results.insertId;
-          db.query('UPDATE ELECTRIC_VEHICLE SET availability=0 WHERE vehicle_id=?', [vehicleID]);
-          db.query('INSERT INTO TAKES SET ?', {
-            Trip_id: tripID,
-            user_id: accountID,
-            user_who_initiated_trip_id: accountID
-          }, (error, results) => {
-            if (error) {
-              console.log(error);
-              res.status(400).json({ message: 'Falure!' });
-            } else {
-              res.status(200).json({ success: true });
-            }
-          });
-        }
-      });
-    } else {
-      res.status(200).json({ success: false, message: 'Sorry, vehicle already rented' });
-    }
-  });
-}
+  try {
+    const rentElectricVehicles = await db.query('SELECT * FROM ELECTRIC_VEHICLE WHERE vehicle_id=? AND availability=1', [vehicleID]);
+    if (!rentElectricVehicles.length) { throw new Error('Unable to rent electric vehicle'); }
+    const startLat = req.body.startLatitude;
+    const startLng = req.body.startLongitude;
+    
+    const tripCreate = await db.query('INSERT INTO TRIP SET ?', { pickup_latitude: startLat, pickup_longitude: startLng, start_time: helper.currentTime(), date: helper.currentDate() });
+    if(!tripCreate.affectedRows) { throw new Error('Unable to create trip'); }
+    const tripID = tripCreate.insertId;
+    
+    const updateElectricVehicles = await db.query('UPDATE ELECTRIC_VEHICLE SET availability=0 WHERE vehicle_id=?', [vehicleID]);
+    if(!updateElectricVehicles.affectedRows) { throw new Error('Unable to update electric vehicle'); }
+    
+    const insertTakes = await db.query('INSERT INTO TAKES SET ?', { tripID, accountID, accountID });
+    if(!insertTakes.affectedRows) { throw new Error('Unable to create takes'); }
+  } catch(error) {
+    console.log(error);
+    res.status(400).json({ success: false});
+  }
+});
 
-routes.post('/api/chargeElectricVehicle', (req, res) => {
+routes.post('/api/chargeElectricVehicle', async (req, res) => {
   const user_id = req.body.userId;
   const vehicle_id = req.body.vehicle_id;
   const chargePercentage = req.body.percentage;
@@ -159,7 +141,7 @@ routes.post('/api/chargeElectricVehicle', (req, res) => {
       }
     })
   })
-})
+});
 
 routes.post('/api/addFunds', (req, res) => {
   const user_id = req.body.userId;
