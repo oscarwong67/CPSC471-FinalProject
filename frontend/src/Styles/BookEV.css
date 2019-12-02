@@ -1,0 +1,8 @@
+.location-marker {
+    display: flex;
+    flex-direction: column;
+}
+
+.location-marker-icon {
+    align-self: center;
+}
