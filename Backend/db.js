@@ -1,19 +1,38 @@
-
+'use strict'
+const util = require('util');
 const mysql = require('mysql');
-console.log('Initializing database connection...');
 
-const connection = mysql.createConnection({
+console.log('Initializing database connection...');
+const pool = mysql.createPool({
+    connectionLimit: 10,
     host: 'remotemysql.com',
     user: 'cfxpQFeAgl',
     password: '5wLicDMtkr',
-    database: 'cfxpQFeAgl'
+    database: 'cfxpQFeAgl',
+    charset: 'utf8mb4',
+    debug: false
 });
 
-connection.connect();
+// Ping database to check for common exception errors.
+pool.getConnection((err, connection) => {
+    if (err) {
+        if (err.code === 'PROTOCOL_CONNECTION_LOST') {
+            console.error('Database connection was closed.')
+        }
+        if (err.code === 'ER_CON_COUNT_ERROR') {
+            console.error('Database has too many connections.')
+        }
+        if (err.code === 'ECONNREFUSED') {
+            console.error('Database connection was refused.')
+        }
+    }
 
-connection.query('SELECT 1 + 1 AS solution', (error, results, fields) => {
-    if (error) throw error;
-    console.log('If this prints "2", then the database is online and working. ', results[0].solution);
-});
+    if (connection) connection.release()
 
-module.exports = connection;
+    return
+})
+
+// Promisify for Node.js async/await.
+pool.query = util.promisify(pool.query)
+
+module.exports = pool;

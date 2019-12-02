@@ -1,4 +1,4 @@
-var mysql      = require('mysql');
+var mysql      = require('promise-mysql');
 var connection = mysql.createConnection({
   host     : 'remotemysql.com',
   user     : 'cfxpQFeAgl',
