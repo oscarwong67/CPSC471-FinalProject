@@ -7,6 +7,7 @@ import Login from './Components/Login';
 import DashboardPicker from './Components/DashboardPicker';
 import BookCarTrip from './Components/Customer/BookCarTrip';
 import SignoutButton from './Components/SignoutButton';
+import ManagePaymentAccount from './Components/ManagePaymentAccount';
 import history from './history';
 
 function App() {
@@ -24,6 +25,7 @@ function App() {
           </Switch>
         </Route>
         <PrivateRoute path="/bookCarTrip" component={BookCarTrip} />
+        <PrivateRoute path="/managePaymentAccount" component={ManagePaymentAccount} />
         <PrivateRoute path="/" component={SignoutButton} />
       </Router>
     </div>
