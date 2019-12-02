@@ -71,12 +71,24 @@ routes.post('/api/signup', async (req, res) => {
   }
 });
 
-routes.get('/api/accountBalance', async (req, res) => {
+routes.get('/api/getAccountBalance', async (req, res) => {
   const accountID = req.query.accountId;
   try {
     const results = await db.query('SELECT balance FROM PAYMENT_ACCOUNT WHERE user_id=?', [accountID]);
     if (!results.length) throw new Error(`Unable to fetch account balance for user ${accountID}`);
     res.status(200).json({ success: true, message: 'Success!', 'accountId': accountID, 'accountBalance': results[0].balance });
+  } catch (error) {
+    console.log(error);
+    res.status(400).json({ 'success': false });
+  }
+});
+
+routes.get('/api/getCustomerCreditCard', async (req, res) => {
+  const accountID = req.query.accountId;
+  try {
+    const results = await db.query('SELECT credit_card FROM CREDIT_CARD WHERE user_id=?', [accountID]);
+    if (!results.length) throw new Error(`Unable to fetch credit card for user ${accountID}`);
+    res.status(200).json({ success: true, message: 'Success!', 'accountId': accountID, 'credit_card': results[0].credit_card });
   } catch (error) {
     console.log(error);
     res.status(400).json({ 'success': false });
@@ -149,6 +161,38 @@ routes.post('/api/chargeElectricVehicle', (req, res) => {
   })
 })
 
+routes.post('/api/addFunds', (req, res) => {
+  const user_id = req.body.userId;
+  const amountAdded = req.body.amount;
+
+  db.query('SELECT balance FROM PAYMENT_ACCOUNT WHERE user_id=?', [user_id], (error, results) => {
+    if (error) throw error;
+    if (results.length > 0) {
+      const oldBalance = results[0].balance;
+      const balance = helper.calcNewBalance(amountAdded, oldBalance);
+      db.query('UPDATE PAYMENT_ACCOUNT SET balance=? WHERE user_id=?', [balance, user_id], (error, results) => {
+        if (error) throw error;
+      })
+      res.status(200).json({ success: true });
+    } else {
+      res.status(200).json({ success: false });
+    }
+  })
+})
+
+routes.post('/api/withdrawFunds', async (req, res) => {
+  const user_id = req.body.userId;
+  try{
+    const results = await db.query('UPDATE PAYMENT_ACCOUNT SET balance=0 WHERE user_id=?', [user_id]);
+    if (! results.affectedRows) {
+      throw new Error('failed to withdraw account balance');
+    }
+    res.status(200).json({ success: true });
+  } catch(error) {
+    res.status(200).json({ success: false });
+  }
+})
+
 routes.post('/api/bookCarTrip', (req, res) => {
   const userId = req.body.userId;
   const startLat = req.body.startLatitude;
@@ -194,7 +238,6 @@ routes.post('/api/bookCarTrip', (req, res) => {
     }
   })
 });
-
 
 routes.get('/api/getCustomerTripStatus', (req, res) => {
   const userId = req.query.userId;
