@@ -95,7 +95,7 @@ routes.get('/api/getCustomerCreditCard', async (req, res) => {
   }
 });
 
-routes.post('/api/rentElectricVehicle'), async(req, res) => {
+routes.post('/api/rentElectricVehicle', async(req, res) => {
   //  use req.query.accountId and req.query.electricVehicleId?
   const accountID = req.body.accountId;
   const vehicleID = req.body.electricVehicleId;
