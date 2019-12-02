@@ -6,26 +6,24 @@ routes.get('/api/', (req, res) => {
   res.status(200).json({ message: 'Connected!' });
 });
 
-routes.post('/api/login', (req, res) => {
+routes.post('/api/login', async (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
-  db.query('SELECT * FROM USER WHERE Email=? AND Password=?', [email, password], (error, results) => {
-    if (error || !results || results.length === 0) {
-      if (error) {
-        console.log(error);
-      }
-      res.status(400).json({ message: 'Failure!' });  //  example of error case for HTTP 400 (bad request)
-    } else if (results) {
-      res.status(200).json({
-        success: true,
-        accountId: results[0].user_id,
-        accountType: results[0].accountType
-      });
-    }
-  });
+  try {
+    const accountInfo = await db.query('SELECT * FROM USER WHERE Email=? AND Password=?', [email, password]);
+    if (!accountInfo.length) throw new Error('Invalid username or password!');
+    res.status(200).json({
+      success: true,
+      accountId: accountInfo[0].user_id,
+      accountType: accountInfo[0].accountType
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(400).json({ message: 'Failure!', success: false });  //  example of error case for HTTP 400 (bad request)
+  }
 });
 
-routes.post('/api/signup', (req, res) => {
+routes.post('/api/signup', async (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
   const firstName = req.body.firstName;
@@ -33,43 +31,37 @@ routes.post('/api/signup', (req, res) => {
   const number = req.body.phone;
   const accountType = req.body.accountType;
   try {
-    db.query('INSERT INTO USER SET ?', {
+    const userResults = await db.query('INSERT INTO USER SET ?', {
       Phone_no: number, Fname: firstName, Lname: lastName, Email: email, Password: password, accountType: accountType
-    }, (error, results) => {
-      if (error) { throw error; }
+    });
+    if (!userResults.insertId) throw new Error('Unable to insert into USER during signup.');
+    const user_id = userResults.insertId;
+    if (accountType === "Driver") {
+      const license_plate = req.body.licensePlate;
+      const color = req.body.color;
+      const make = req.body.make;
+      const num_seats = req.body.seats;
 
-      const user_id = results.insertId;
-      if (accountType === "Driver") {
-        const license_plate = req.body.licensePlate;
-        const color = req.body.color;
-        const make = req.body.make;
-        const num_seats = req.body.seats;
-        db.query('INSERT INTO VEHICLE SET vehicle_id=NULL', (error, results) => {
-          if (error) { throw error; }
-          const vehicle_id = results.insertId;
-          db.query('INSERT INTO CAR SET ?', { vehicle_id, license_plate, num_seats, make, color }, (error, results) => {
-            if (error) { throw error; }
-            db.query('INSERT INTO DRIVER SET ?', { user_id, vehicle_id }, (error, results) => {
-              if (error) { throw error; }
-              res.status(200).json({ success: true, message: 'Success!', 'accountId': user_id, 'accountType': 'Driver' });
-            });
-          })
-        });
-      } else if (accountType === "Charger") {
-        db.query('INSERT INTO CHARGER SET ?', { user_id }, (error, results) => {
-          if (error) { throw error; }
-          res.status(200).json({ success: true, message: 'Success!', 'accountId': user_id, 'accountType': 'Charger' });
-        });
-      } else if (accountType === "Customer") {
-        db.query('INSERT INTO CUSTOMER SET ?', { user_id }, (error, results) => {
-          if (error) { throw error; }
-          res.status(200).json({ success: true, message: 'Success!', 'accountId': user_id, 'accountType': 'Customer' });
-        });
-      } else {
-        console.log("no account type recognized\n");
-        res.status(400).json({ success: false, message: 'Failure!' });
-      }
-    })
+      //  vehicle, then car, then driver
+      const vehicleResults = await db.query('INSERT INTO VEHICLE SET vehicle_id=NULL');
+      if (!vehicleResults.insertId) throw new Error('Unable to insert into VEHICLE during driver signup.');
+      const vehicle_id = vehicleResults.insertId;
+      const carResults = await db.query('INSERT INTO CAR SET ?', { vehicle_id, license_plate, num_seats, make, color });
+      if (!carResults.affectedRows) { throw Error('Unable to insert into CAR during driver signup.'); }
+      const driverResults = await db.query('INSERT INTO DRIVER SET ?', { user_id, vehicle_id });
+      if (!driverResults.affectedRows) { throw Error('Unable to insert into DRIVER during driver signup.'); }
+      res.status(200).json({ success: true, message: 'Success!', 'accountId': user_id, 'accountType': 'Driver' });
+    } else if (accountType === "Charger") {
+      const chargerResults = await db.query('INSERT INTO CHARGER SET ?', { user_id });
+      if (!chargerResults.affectedRows) { throw new Error('Unable to insert into CHARGER during signup.'); }
+      res.status(200).json({ success: true, message: 'Success!', 'accountId': user_id, 'accountType': 'Charger' });
+    } else if (accountType === "Customer") {
+      const customerResults = await db.query('INSERT INTO CUSTOMER SET ?', { user_id });
+      if (!customerResults.affectedRows) { throw new Error('Unable to insert into CUSTOMER during signup.') }
+      res.status(200).json({ success: true, message: 'Success!', 'accountId': user_id, 'accountType': 'Customer' });
+    } else {
+      throw new Error("no account type recognized");
+    }
   }
   catch (error) {
     console.log(error);
@@ -79,27 +71,27 @@ routes.post('/api/signup', (req, res) => {
   }
 });
 
-routes.get('/api/accountBalance', (req, res) => {
-  const accountID = req.body.accountId;
-  db.query('SELECT credit_card FROM CREDIT_CARD WHERE user_id=?' [accountID], (error, results) => {
-    if (error) {
-      console.log(error);
-      res.status(400).json({ message: 'Failure!'});
-    } else {
-      res.status(200).json({ success: true, message: 'Success!', 'accountId': user_id, 'accountBalance': results.accountBalance });
-    }
-  });
+routes.get('/api/accountBalance', async (req, res) => {
+  const accountID = req.query.accountId;
+  try {
+    const results = await db.query('SELECT balance FROM PAYMENT_ACCOUNT WHERE user_id=?', [accountID]);
+    if (!results.length) throw new Error(`Unable to fetch account balance for user ${accountID}`);
+    res.status(200).json({ success: true, message: 'Success!', 'accountId': accountID, 'accountBalance': results[0].balance });
+  } catch (error) {
+    console.log(error);
+    res.status(400).json({ 'success': false });
+  }
 });
 
 routes.post('/api/rentElectricVehicle'), (req, res) => {
   //  use req.query.accountId and req.query.electricVehicleId?
   const accountID = req.body.accountId;
   const vehicleID = req.body.electricVehicleId;
-  db.query('SELECT * FROM ELECTRIC_VEHICLE WHERE vehicle_id=? AND availability=1', [vehicleID], (error, reuslts) => {
-    if(error) {
+  db.query('SELECT * FROM ELECTRIC_VEHICLE WHERE vehicle_id=? AND availability=1', [vehicleID], (error, results) => {
+    if (error) {
       console.log(error);
-      res.status(400).json({message : 'Faliure!'});
-    } else if(results.length > 0) {
+      res.status(400).json({ message: 'Faliure!' });
+    } else if (results.length > 0) {
       const startLat = req.body.startLatitude;
       const startLng = req.body.startLongitude;
       db.query('INSERT INTO TRIP SET ?', {
@@ -108,9 +100,9 @@ routes.post('/api/rentElectricVehicle'), (req, res) => {
         start_time: helper.currentTime(),
         date: helper.currentDate()
       }, (error, results) => {
-        if(error) {
+        if (error) {
           console.log(error);
-          res.status(400).json({message: 'Falure!'});
+          res.status(400).json({ message: 'Falure!' });
         } else {
           const tripID = results.insertId;
           db.query('UPDATE ELECTRIC_VEHICLE SET availability=0 WHERE vehicle_id=?', [vehicleID]);
@@ -119,9 +111,9 @@ routes.post('/api/rentElectricVehicle'), (req, res) => {
             user_id: accountID,
             user_who_initiated_trip_id: accountID
           }, (error, results) => {
-            if(error) {
+            if (error) {
               console.log(error);
-              res.status(400).json({message: 'Falure!'});
+              res.status(400).json({ message: 'Falure!' });
             } else {
               res.status(200).json({ success: true });
             }
@@ -129,7 +121,7 @@ routes.post('/api/rentElectricVehicle'), (req, res) => {
         }
       });
     } else {
-      res.status(200).json({ success: false, message: 'Sorry, vehicle already rented'});
+      res.status(200).json({ success: false, message: 'Sorry, vehicle already rented' });
     }
   });
 }
@@ -139,22 +131,22 @@ routes.post('/api/chargeElectricVehicle', (req, res) => {
   const vehicle_id = req.body.vehicle_id;
   const chargePercentage = req.body.percentage;
 
-  db.query('INSERT INTO CHARGES SET ?', {c_user_id: user_id, vehicle_id: vehicle_id, percentage_charged_by: chargePercentage}, (error, results) => {
+  db.query('INSERT INTO CHARGES SET ?', { c_user_id: user_id, vehicle_id: vehicle_id, percentage_charged_by: chargePercentage }, (error, results) => {
     if (error) throw error;
     db.query('SELECT battery_percentage FROM ELECTRIC_VEHICLE WHERE vehicle_id=?', [vehicle_id], (error, results) => {
       if (error) throw error;
-      if (results.length > 0){
+      if (results.length > 0) {
         const oldPercentage = results[0].battery_percentage;
         const percentage = helper.calcNewPercentage(chargePercentage, oldPercentage);
-        db.query('UPDATE ELECTRIC_VEHICLE SET battery_percentage=? WHERE vehicle_id=?', [percentage, vehicle_id], (error, results)=>{
+        db.query('UPDATE ELECTRIC_VEHICLE SET battery_percentage=? WHERE vehicle_id=?', [percentage, vehicle_id], (error, results) => {
           if (error) throw error;
         })
-        res.status(200).json({success: true});
+        res.status(200).json({ success: true });
       } else {
-        res.status(200).json({success: false});
+        res.status(200).json({ success: false });
       }
     })
-  }) 
+  })
 })
 
 routes.post('/api/bookCarTrip', (req, res) => {
