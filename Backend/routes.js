@@ -209,4 +209,16 @@ routes.get('/api/getCustomerTripStatus', (req, res) => {
     });
 });
 
+routes.get('/api/getAvailableElectricVehicles', async (req, res) => {
+  try {
+    const scooters = await db.query('SELECT * FROM ELECTRIC_VEHICLE AS E, SCOOTER AS S WHERE E.vehicle_id=S.vehicle_id AND E.availability=true');
+    const bikes = await db.query('SELECT * FROM ELECTRIC_VEHICLE AS E, BIKE AS B WHERE E.vehicle_id=B.vehicle_id AND E.availability=true');
+    if (! scooters.length && bikes.length) throw new Error('No available vehicles in database.');
+    res.status(200).json({success: true, scooters, bikes});
+  } catch (error) {
+    console.log(error);
+    res.status(400).json({ 'success': false });
+  }
+});
+
 module.exports = routes;

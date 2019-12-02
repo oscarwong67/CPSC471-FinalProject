@@ -39,12 +39,10 @@ class CustomerDashboard extends React.Component {
           </Button> 
           : <div>
             <Button
-              icon='car'
               onClick={this.bookCarTrip}>
               Book Car Trip
             </Button>
             <Button
-              icon='bicycle'
               onClick={this.rentVehicle}>
               Rent Vehicle
             </Button>
@@ -59,7 +57,7 @@ class CustomerDashboard extends React.Component {
   }
 
   rentVehicle = () => {
-    //todo
+    history.push('/rentVehicle');
   }
 
 }
