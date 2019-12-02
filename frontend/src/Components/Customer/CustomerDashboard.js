@@ -39,13 +39,15 @@ class CustomerDashboard extends React.Component {
           </Button> 
           : <div>
             <Button
-              onClick={this.bookCarTrip}>
-              Book Car Trip
-            </Button>
+              onClick={this.bookCarTrip}
+              content = 'Book Car Trip'
+              icon = 'car'
+            />
             <Button
-              onClick={this.rentVehicle}>
-              Rent Vehicle
-            </Button>
+              onClick={this.rentVehicle}
+              content = 'Rent Vehicle'
+              icon = 'bicycle'
+            />
           </div>
       }
       <Image src={mapImg} size='massive' centered bordered />

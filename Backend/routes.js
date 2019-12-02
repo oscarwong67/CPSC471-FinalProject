@@ -163,7 +163,7 @@ routes.post('/api/addFunds', (req, res) => {
       res.status(200).json({ success: false });
     }
   })
-})
+});
 
 routes.post('/api/withdrawFunds', async (req, res) => {
   const user_id = req.body.userId;
@@ -176,9 +176,9 @@ routes.post('/api/withdrawFunds', async (req, res) => {
   } catch(error) {
     res.status(200).json({ success: false });
   }
-})
+});
 
-routes.post('/api/bookCarTrip', (req, res) => {
+routes.post('/api/bookCarTrip', async (req, res) => {
   const userId = req.body.userId;
   const startLat = req.body.startLatitude;
   const startLng = req.body.startLongitude;
