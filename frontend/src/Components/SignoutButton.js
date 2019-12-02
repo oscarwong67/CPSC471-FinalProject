@@ -8,7 +8,12 @@ function signOut() {
 }
 
 const SignoutButton = () => (
-    <Button fluid onClick={signOut}>Sign Out!</Button>
+    <Button 
+        size='large' 
+        onClick={signOut}
+        content = 'Sign Out!'
+    />
+
 )
 
 export default SignoutButton;

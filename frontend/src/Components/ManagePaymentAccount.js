@@ -7,15 +7,41 @@ const axios = require('axios');
 class ManagePaymentAccount extends React.Component{
   constructor(props){
     super(props);
-    const hasCreditCard = checkHasCreditCard();
     this.state = {
       amount: '',
-      balance: null,
-      creditCard: ''
+      balance: 0,
+      creditCard: '',
+      // hasCreditCard: null
     }
-
   }
-  
+  componentDidMount() {
+    axios.get('http://localhost:5000/api/getAccountBalance', {
+      params: {
+        accountId: localStorage.getItem('accountId')
+      }
+    }).then((response) => {
+      if(response.data.success){
+        this.setState({ 
+          balance: response.data.accountBalance
+        })
+      }
+    }).catch((error) => {
+      console.log(error)
+    });
+    axios.get('http://localhost:5000/api/getCustomerCreditCard', {
+      params : {
+        accountId: localStorage.getItem('accountId')
+      }
+    }).then((response) => {
+      if (response.data.success){
+        this.setState({
+          creditCard: response.data.credit_card
+        })
+      }
+    }).catch((error) => {
+      console.log(error)
+    });
+  }
   render = () => (
     <div>
       <Dashboard/>
@@ -28,7 +54,7 @@ class ManagePaymentAccount extends React.Component{
               content = 'Account Balance'
               attached = 'top'
               size = 'large'/>
-            <Container>$ {this.state.amount}</Container>
+            <Container>$ {this.state.balance}</Container>
           </Segment>
         </Grid.Column>
         <Grid.Column></Grid.Column>
@@ -48,7 +74,7 @@ class ManagePaymentAccount extends React.Component{
       <Divider horizontal>Add Funds</Divider>
       
       {
-        (this.hasCreditCard === true) ?
+        (this.state.creditCard !== '') ?
         this.renderHasCreditCard()
         : this.renderAddCreditCard()
       }
@@ -93,27 +119,46 @@ class ManagePaymentAccount extends React.Component{
   }
   renderWithdrawFunds = () => (
     <div>
-      {/* todo */}
+      <Divider horizontal>Withdraw Funds</Divider>
+      <Button
+        content = 'Withdraw'
+        size = 'large'
+        onClick = {this.withdrawFunds}
+      />
     </div>
   )
   addFunds = () => {
-    //TODO
-  }
-}
-
-function checkHasCreditCard () {
-  axios.post('http://localhost:5000/api/getCustomerCreditCard', {
-    userId: localStorage.getItem('accountId')
-  }).then((response) => {
-    if (response.data.success) {
-      return true;
+    if (this.state.amount === ''){
+      alert('Please fill out all forms!');
+    } else if(this.state.amount <= 0){
+      alert('invalid amount. Please enter a positive value!')
     } else {
-      return false;
+      axios.post('http://localhost:5000/api/addFunds', {
+        amount: this.state.amount,
+        userId: localStorage.getItem('accountId')
+      }).then((response) => {
+        if(response.data.success){
+          alert('successfully added funds');
+          this.setState({ amount: ''})
+          window.location.reload();
+        } else {
+          alert('failed to add funds. Please try again later.');
+        }
+      })
     }
-  }).catch((error) => {
-    alert('Failed to check for credit card');
-    console.error(error);
-  });
+  }
+  withdrawFunds = () => {
+    axios.post('http://localhost:5000/api/withdrawFunds', {
+      userId: localStorage.getItem('accountId')
+    }).then((response) => {
+      if(response.data.success){
+        alert('successfully withdrew account balance');
+        this.setState({ balance: 0 })
+      } else {
+        alert('failed to withdraw account balance. Please try again later.');
+      }
+    })
+  }
 }
 
 export default ManagePaymentAccount;

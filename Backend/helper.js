@@ -36,4 +36,8 @@ const calcNewPercentage = (chargePercentage, oldPercentage) => {
     return result;
 }
 
-module.exports = { calcDistanceKM, calcFare, currentTime, currentDate, calcTripEnd, calcNewPercentage }
+const calcNewBalance = (amountAdded, oldBalance) => {
+    return parseInt(amountAdded, 10) + parseInt(oldBalance, 10);
+}
+
+module.exports = { calcDistanceKM, calcFare, currentTime, currentDate, calcTripEnd, calcNewPercentage, calcNewBalance }
