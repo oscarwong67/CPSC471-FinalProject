@@ -1,5 +1,5 @@
 import React from 'react';
-import { Grid, Header, Label, Icon } from 'semantic-ui-react';
+import { Grid, Header, Label, Icon, Button } from 'semantic-ui-react';
 import ReactMapGL, { Marker } from "react-map-gl";
 import '../../Styles/MapStyle.css';
 
@@ -26,6 +26,9 @@ class ManageCustomerTrip extends React.Component {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(this.updatePosition)
     }
+  }
+  endCustomerTrip = () => {
+
   }
   updatePosition = (position) => {
     const viewport = this.state.viewport;
@@ -99,6 +102,7 @@ class ManageCustomerTrip extends React.Component {
         {this.renderCarTripMarkers()}
       </ReactMapGL>
       <Header as="h3">Current Ride Info: </Header>
+      <Button content="End Ryde" onClick={this.endCustomerTrip} />
     </Grid>
   );
 }

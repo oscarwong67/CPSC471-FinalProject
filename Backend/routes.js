@@ -319,4 +319,12 @@ routes.post('/api/setCleanupFee', async (req, res) => {
   }
 });
 
+routes.get('/api/getDriverTripStatus', async (req, res) => {
+  // let me (oscar) do this one, i have a plan
+});
+
+routes.get('/api/getDriverTrip', async (req, res) => {
+  //  used to populate driver manage trip page
+});
+
 module.exports = routes;
