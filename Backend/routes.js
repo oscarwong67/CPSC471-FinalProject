@@ -265,9 +265,9 @@ routes.get('/api/getCustomerTrip', async (req, res) => {
     if(!customersTrips.length) { throw new Error('Unable to get customers current trip'); }
     const carTrip = await db.query('SELECT * FROM CAR_TRIP AS CT, TRIP AS T WHERE CT.trip_id=?' [customersTrips.trip_id]);
     if(!carTrip.length) {
-      res.status(200).json({success: true, type: 'electricVehicleTrip', customersTrips});
+      res.status(200).json({success: true, type: 'electricVehicleTrip', trip: customersTrips[0]});
     } else {
-      res.status(200).json({success: true, type: 'carTrip', customersTrips});
+      res.status(200).json({success: true, type: 'carTrip', trip: customersTrips});
     }
    } catch (error) {
      console.log(error);
