@@ -44,4 +44,9 @@ const calcPayAmount = (payRate, chargePercentage) => {
     return payRate * chargePercentage;
 }
 
-module.exports = { calcDistanceKM, calcFare, currentTime, currentDate, calcTripEnd, calcNewPercentage, calcNewBalance, calcPayAmount }
+const calcRating = (count, driversOldRating, driverRating) => {
+    const result = (parseInt(count, 10) * parseInt(driversOldRating, 10)) + parseInt(driverRating, 10);
+    return result / (parseInt(count, 10) + 1);
+}
+
+module.exports = { calcDistanceKM, calcFare, currentTime, currentDate, calcTripEnd, calcNewPercentage, calcNewBalance, calcPayAmount, calcRating }
