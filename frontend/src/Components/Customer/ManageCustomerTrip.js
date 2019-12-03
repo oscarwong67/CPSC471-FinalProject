@@ -4,7 +4,7 @@ import ReactMapGL, { Marker } from "react-map-gl";
 import '../../Styles/MapStyle.css';
 
 const defaultWidth = '80vw';
-const defaultHeight = '60vh';
+const defaultHeight = '40vh';
 const defaultZoom = 12;
 class ManageCustomerTrip extends React.Component {
   constructor(props) {
@@ -98,6 +98,7 @@ class ManageCustomerTrip extends React.Component {
         {this.renderEVCurrentLocationMarker()}
         {this.renderCarTripMarkers()}
       </ReactMapGL>
+      <Header as="h3">Current Ride Info: </Header>
     </Grid>
   );
 }
