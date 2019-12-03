@@ -2,6 +2,7 @@ import React from 'react';
 import { Grid, Header, Label, Icon, Button } from 'semantic-ui-react';
 import ReactMapGL, { Marker } from "react-map-gl";
 import '../../Styles/MapStyle.css';
+const axios = require('axios');
 
 const defaultWidth = '80vw';
 const defaultHeight = '40vh';
@@ -26,6 +27,15 @@ class ManageCustomerTrip extends React.Component {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(this.updatePosition)
     }
+    axios.get('http://localhost:5000/api/getCustomerTrip', {
+      params: {
+        userId: localStorage.getItem('accountId')
+      }
+    }).then((response) => {
+      
+    }).catch((error) => {
+      console.error(error);
+    });
   }
   endCustomerTrip = () => {
 
