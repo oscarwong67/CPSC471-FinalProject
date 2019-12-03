@@ -278,9 +278,20 @@ routes.get('/api/getCustomerTrip', async (req, res) => {
 routes.post('/api/rateDriver', async (req, res) => {
   try {
     const driverId = req.body.driverId;
+    const driverRating = req.body.rating;
     //  this is a bit of a yikes, but you'll need to count how many car trips they've done
     //  so we can average the rating properly
     //  easier to test the SQL in phpmyadmin FIRST before using it here
+    const driverTrips = await db.query('SELECT COUNT(*) AS count FROM CAR_TRIP WHERE driver_id=? AND driver_ended=true', [driverId]);
+    if(!driverTrips.length) { throw new Error('Unable to get drivers trips'); }
+
+    const driversOldRating = await db.query('SELECT driver_rating FROM DRIVER WHERE user_id=?', [driverId]);
+    if(!driversOldRating.length) { throw new Error('Unable to get drivers rating'); }
+
+    const newRating = helper.calcRating(driverTrips.count, driversOldRating.driver_rating, driverRating);
+    const driverUpdateRating = await db.query('UPDATE DRIVER SET driver_rating=? WHERE user_id=?', [newRating, driverId]);
+    if(!driverUpdateRating.length) { throw new Error('Unable to update drivers rating'); }
+    res.status(200).json({ success: true });
   } catch (error) {
     console.log(error);
     res.status(400).json({ success: false });
