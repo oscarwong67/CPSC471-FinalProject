@@ -1,5 +1,5 @@
 import React from 'react';
-import { Input, Button, Form, Group, Icon } from 'semantic-ui-react'
+import { Input, Button, Form, Group, Icon, Grid } from 'semantic-ui-react'
 import Dashboard from '../../Dashboard'
 import history from '../../../history';
 const axios = require('axios');
@@ -15,29 +15,34 @@ class ChargerDashboard extends React.Component{
   render = () => (
     <div>
       <Dashboard/>
-        <Form>
-          <Form.Group widths='equal'>
-            <Form.Input
-              label='vehicle id'
-              placeholder='vehicle id'
-              value = {this.state.vehicleId}
-              onChange = {this.handleUpdateVehicleId}
-            />
-            <Form.Input
-              label='percentage'
-              icon = 'percent'
-              placeholder='percentage'
-              value = {this.state.percentage}
-              onChange = {this.handleUpdatePercentage}
-            />
-          </Form.Group>
-        </Form>
-
+      <Grid columns = {3}>
+        <Grid.Column></Grid.Column>
+          <Grid.Column>
+            <Form>
+              <Form.Group widths='equal'>
+                <Form.Input
+                  label = 'vehicle id'
+                  placeholder = 'vehicle id'
+                  value = {this.state.vehicleId}
+                  onChange = {this.handleUpdateVehicleId}
+                />
+                <Form.Input
+                  label ='percentage'
+                  icon = 'percent'
+                  placeholder ='percentage'
+                  value = {this.state.percentage}
+                  onChange = {this.handleUpdatePercentage}
+                />
+              </Form.Group>
+            </Form>
+          </Grid.Column>
+        <Grid.Column></Grid.Column>
+      </Grid>
         <Button
         size = 'large'
-        onClick = {this.chargeElectricVehicle}>
-          Enter
-        </Button>
+        onClick = {this.chargeElectricVehicle}
+        content = 'Enter'
+        />
     </div>    
   );
   chargeElectricVehicle = () => {

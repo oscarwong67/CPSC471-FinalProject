@@ -90,12 +90,11 @@ routes.get('/api/getCustomerCreditCard', async (req, res) => {
     if (!results.length) throw new Error(`Unable to fetch credit card for user ${accountID}`);
     res.status(200).json({ success: true, message: 'Success!', 'accountId': accountID, 'credit_card': results[0].credit_card });
   } catch (error) {
-    console.log(error);
     res.status(400).json({ 'success': false });
   }
 });
 
-routes.post('/api/rentElectricVehicle'), async(req, res) => {
+routes.post('/api/rentElectricVehicle', async(req, res) => {
   //  use req.query.accountId and req.query.electricVehicleId?
   const accountID = req.body.accountId;
   const vehicleID = req.body.electricVehicleId;
@@ -124,23 +123,32 @@ routes.post('/api/chargeElectricVehicle', async (req, res) => {
   const user_id = req.body.userId;
   const vehicle_id = req.body.vehicle_id;
   const chargePercentage = req.body.percentage;
+  try {
+    const insertCharges = await db.query('INSERT INTO CHARGES SET ?', { c_user_id: user_id, vehicle_id: vehicle_id, percentage_charged_by: chargePercentage });
+    if (!insertCharges.affectedRows) { throw new Error('Unable to insert into charges'); }
 
-  db.query('INSERT INTO CHARGES SET ?', { c_user_id: user_id, vehicle_id: vehicle_id, percentage_charged_by: chargePercentage }, (error, results) => {
-    if (error) throw error;
-    db.query('SELECT battery_percentage FROM ELECTRIC_VEHICLE WHERE vehicle_id=?', [vehicle_id], (error, results) => {
-      if (error) throw error;
-      if (results.length > 0) {
-        const oldPercentage = results[0].battery_percentage;
-        const percentage = helper.calcNewPercentage(chargePercentage, oldPercentage);
-        db.query('UPDATE ELECTRIC_VEHICLE SET battery_percentage=? WHERE vehicle_id=?', [percentage, vehicle_id], (error, results) => {
-          if (error) throw error;
-        })
-        res.status(200).json({ success: true });
-      } else {
-        res.status(200).json({ success: false });
-      }
-    })
-  })
+    const selectElectricVehicleCharging = await db.query('SELECT battery_percentage FROM ELECTRIC_VEHICLE WHERE vehicle_id=?', [vehicle_id] );
+    if (!selectElectricVehicleCharging.length) { throw new Error('Unable to select electric vehicle to charge'); }
+    const oldPercentage = selectElectricVehicleCharging[0].battery_percentage;
+    console.log(oldPercentage);
+    const percentage = helper.calcNewPercentage(chargePercentage, oldPercentage);
+    console.log(percentage);
+    const updateElectricVehiclePercent = await db.query('UPDATE ELECTRIC_VEHICLE SET battery_percentage=? WHERE vehicle_id=?', [percentage, vehicle_id]);
+    if (!updateElectricVehiclePercent.affectedRows) { throw new Error('Unable to update electric vehicle percentage'); }
+
+    const chargerPayRate = await  db.query('SELECT charge_price_per_percent FROM CHARGER WHERE user_id=?', [user_id]);
+    if (!chargerPayRate.length){ throw new Error('Unable to get charger pay rate'); }
+    const getOldBalance = await db.query('SELECT balance FROM PAYMENT_ACCOUNT WHERE user_id=?', [user_id]);
+    if (!getOldBalance.length){ throw new Error('Unable to get charger account balance'); }
+    const payAmount = helper.calcPayAmount(chargerPayRate[0].charge_price_per_percent, chargePercentage);
+    const newBalance = helper.calcNewBalance(payAmount, getOldBalance[0].balance);
+    const payCharger = await db.query('UPDATE PAYMENT_ACCOUNT SET balance=? WHERE user_id=?', [newBalance, user_id]);
+    if (!payCharger.affectedRows) { throw new Error('Unable to update electric vehicle percentage'); }
+    res.status(200).json({ success: true});
+  } catch(error) {
+    console.log(error);
+    res.status(400).json({ success: false});
+  }
 });
 
 routes.post('/api/addFunds', (req, res) => {
@@ -160,7 +168,7 @@ routes.post('/api/addFunds', (req, res) => {
       res.status(200).json({ success: false });
     }
   })
-})
+});
 
 routes.post('/api/withdrawFunds', async (req, res) => {
   const user_id = req.body.userId;
@@ -173,9 +181,9 @@ routes.post('/api/withdrawFunds', async (req, res) => {
   } catch(error) {
     res.status(200).json({ success: false });
   }
-})
+});
 
-routes.post('/api/bookCarTrip', (req, res) => {
+routes.post('/api/bookCarTrip', async (req, res) => {
   const userId = req.body.userId;
   const startLat = req.body.startLatitude;
   const startLng = req.body.startLongitude;
@@ -183,42 +191,38 @@ routes.post('/api/bookCarTrip', (req, res) => {
   const destLng = req.body.destLongitude;
   const distance = helper.calcDistanceKM(startLat, startLng, destLat, destLng);
 
-  db.query('SELECT user_id FROM DRIVER WHERE availability=1', (error, results) => {
-    if (error) throw error;
-    if (results.length > 0) {
-      const driverId = results[0].user_id;
-      //  create a new trip
-      db.query('INSERT INTO TRIP SET ?', {
-        pickup_latitude: startLat,
-        dest_latitude: destLat,
-        pickup_longitude: startLng,
-        dest_longitude: destLng,
-        distance,
-        fare: helper.calcFare(distance),
-        start_time: helper.currentTime(),
-        // end_time: helper.calcTripEnd(),  // just going to leave this null until customer ends trip 
-        date: helper.currentDate()
-      }, (error, results) => {
-        if (error) throw error;
-        const tripId = results.insertId;
-        //  set driver status to unavailable
-        db.query('UPDATE DRIVER SET availability=? WHERE user_id=?', [0, driverId], (error, results) => {
-          if (error) throw error;
-          //  create a new car trip
-          db.query('INSERT INTO CAR_TRIP SET ?', { trip_id: tripId, driver_id: driverId }, (error, results) => {
-            if (error) throw error;
-            //  create a "takes" entity
-            db.query('INSERT INTO TAKES SET ?', { Trip_id: tripId, user_id: userId, user_who_initiated_trip_id: userId }, (error, results) => {
-              if (error) throw error;
-              res.status(200).json({ success: true });
-            })
-          })
-        });
-      });
-    } else {
-      res.status(200).json({ success: false, message: 'Sorry, unable to book Ryde. No available drivers.' });
-    }
-  })
+  try {
+    const selectAvailableDriver = await db.query('SELECT user_id FROM DRIVER WHERE availability=1');
+    if (!selectAvailableDriver.length) { throw new Error('Unable to find find available vehicle'); }
+    const driverId = selectAvailableDriver.user_id;
+    //  create a new trip
+    const createTrip = await db.query('INSERT INTO TRIP SET ?', {
+      pickup_latitude: startLat,
+      dest_latitude: destLat,
+      pickup_longitude: startLng,
+      dest_longitude: destLng,
+      distance,
+      fare: helper.calcFare(distance),
+      start_time: helper.currentTime(),
+      // end_time: helper.calcTripEnd(),  // just going to leave this null until customer ends trip 
+      date: helper.currentDate()
+    });
+    if (!createTrip.affectedRows) { throw new Error('Unable to create trip'); }
+    const tripId = results.insertId;
+    //  set driver status to unavailable
+    const updateDriver = await db.query('UPDATE DRIVER SET availability=0 WHERE user_id=?', [driverId]);
+    if (!updateDriver.affectedRows) { throw new Error('Unable to update drivers status'); }
+    //  create a new car trip
+    const createCarTrip = await db.query('INSERT INTO CAR_TRIP SET ?', { trip_id: tripId, driver_id: driverId });
+    if (!createCarTrip.affectedRows) { throw new Error('Unable to create car trip'); }
+    //  create a "takes" entity
+    const createTakes = await db.query('INSERT INTO TAKES SET ?', { Trip_id: tripId, user_id: userId, user_who_initiated_trip_id: userId });
+    if (!createTakes.affectedRows) { throw new Error('Unable to create takes'); }
+    res.status(200).json({ success: true });  
+  } catch(error) {
+    console.log(error);
+    res.status(400).json({ success: false});
+  }
 });
 
 routes.get('/api/getCustomerTripStatus', (req, res) => {
