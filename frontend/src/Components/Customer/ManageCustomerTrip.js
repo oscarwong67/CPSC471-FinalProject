@@ -51,7 +51,7 @@ class ManageCustomerTrip extends React.Component {
   }
   renderCarTripMarkers = () => {
     return (
-      this.state.currentTrip.type === "car" &&
+      this.state.currentTrip.type === "carTrip" &&
       (<div>
         <Marker className="location-marker"
           latitude={this.state.currentTrip.dest_latitude}
@@ -76,7 +76,7 @@ class ManageCustomerTrip extends React.Component {
   }
   renderEVCurrentLocationMarker = () => {
     return (
-      this.state.currentTrip.type === "ev" &&
+      this.state.currentTrip.type === "electricVehicleTrip" &&
       (<Marker className="location-marker"
         latitude={this.state.latitude}
         longitude={this.state.longitude}
