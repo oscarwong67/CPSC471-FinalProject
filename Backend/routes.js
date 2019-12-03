@@ -262,14 +262,12 @@ routes.get('/api/getCustomerTrip', async (req, res) => {
     //  just return everything i guess lol
     const customersTrips = await db.query('SELECT * FROM CUSTOMER AS C, TRIP AS TR, TAKES AS TA WHERE C.user_id=TA.user_who_initiated_trip_id AND TR.Trip_id=TA.trip_id AND TR.end_time IS NULL AND C.user_id=?', 
     [customerId]);
-    const carCustomersTrips = await db.query('SELECT * FROM CUSTOMER AS C, TRIP AS TR, TAKES AS TA, CAR_TRIP AS CTR WHERE C.user_id=TA.user_who_initiated_trip_id AND TR.Trip_id=TA.trip_id AND TR.end_time IS NULL AND TR.trip_id=CTR.trip_id AND C.user_id=?',
-    [customerId]);
-    if(!customersTrips.length && !carCustomersTrips.length) { throw new Error('Unable to get customers current trip'); }
-    
-    if(customersTrips.length && !carCustomersTrips.length) {
+    if(!customersTrips.length) { throw new Error('Unable to get customers current trip'); }
+    const carTrip = await db.query('SELECT * FROM CAR_TRIP AS CT, TRIP AS T WHERE CT.trip_id=?' [customersTrips.trip_id]);
+    if(!carTrip.length) {
       res.status(200).json({success: true, status: 'electricVehicleTrip', customersTrips});
     } else {
-      res.status(200).json({success: true, status: 'carTrip', carCustomersTrips});
+      res.status(200).json({success: true, status: 'carTrip', customersTrips});
     }
    } catch (error) {
      console.log(error);
