@@ -1,7 +1,7 @@
 import React from 'react';
-import ReactMapGL, { GeolocateControl, Marker } from "react-map-gl";
+import ReactMapGL, { Marker, Popup } from "react-map-gl";
 import { Grid, Icon, Label, Button } from 'semantic-ui-react';
-import '../../Styles/BookEV.css'
+import '../../Styles/MapStyle.css'
 import history from '../../history';
 const axios = require('axios');
 
@@ -11,7 +11,7 @@ const defaultWidth = '80vw';
 const defaultHeight = '60vh';
 const defaultZoom = 12;
 
-class BookEV extends React.Component {
+class RentEV extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -25,7 +25,9 @@ class BookEV extends React.Component {
       markers: [],
       scooters: [],
       bikes: [],
-      vehicleSelected: false
+      vehicleSelected: false,
+      popupInfo: {},
+      selectedVehicleId: -1
     }
   }
   componentDidMount() {
@@ -59,14 +61,63 @@ class BookEV extends React.Component {
       viewport,
     })
   }
+  submitRentEVRequest = () => {
+    if (this.state.vehicleSelected) {
+      axios.post('http://localhost:5000/api/rentElectricVehicle', {
+        accountId: localStorage.getItem('accountId'),
+        electricVehicleId: this.state.selectedVehicleId
+      })
+      .then((response) => {
+        if (response.data.success) {
+          alert('Successfully rented electric vehicle! Redirecting you to your dashboard. Ride safe!');
+          history.push('/');
+        } else {
+          alert('Failed to book trip. Vehicle is unavailable at this time. Try again later.');
+        }
+      })
+      .catch((error) => {
+        console.error(error);
+        alert('Failed to book trip. Vehicle is unavailable at this time. Try again later.');
+      });
+    }
+  }
+  handleMarkerClick = (latitude, longitude, selectedVehicleId) => {
+    const popupInfo = { latitude, longitude };
+    this.setState({
+      popupInfo,
+      vehicleSelected: true,
+      selectedVehicleId
+    });
+  }
+  renderPopup = () => {
+    return (
+      this.state.vehicleSelected && (<Popup
+        tipSize={8}
+        anchor="bottom"
+        longitude={this.state.popupInfo.longitude}
+        latitude={this.state.popupInfo.latitude}
+        closeOnClick={false}
+      >Selected!</Popup>)
+    );
+  };
   renderMarkers = () => {
     const markers = [];
     for (const scooter of this.state.scooters) {
       // console.log(scooter);
       markers.push(
-        <Marker className="location-marker" latitude={scooter.loc_latitude} longitude={scooter.loc_longitude} offsetLeft={-20} offsetTop={-10} key={scooter.vehicle_id}>
+        <Marker className="location-marker"
+          latitude={scooter.loc_latitude}
+          longitude={scooter.loc_longitude}
+          offsetLeft={-20}
+          offsetTop={-10}
+          key={scooter.vehicle_id}
+        >
           <Label className="location-marker-label" pointing='below' color='red'>{scooter.scooter_model} Scooter</Label>
-          <Icon className="location-marker-icon" name="map marker" color='green' size='big' />
+          <Icon className="location-marker-icon"
+            name="map marker"
+            color='green'
+            size='big'
+            onClick={() => this.handleMarkerClick(scooter.loc_latitude, scooter.loc_longitude, scooter.vehicle_id)} />
         </Marker>
       );
     }
@@ -74,9 +125,19 @@ class BookEV extends React.Component {
     for (const bike of this.state.bikes) {
       // console.log(bike);
       markers.push(
-        <Marker className="location-marker" latitude={bike.loc_latitude} longitude={bike.loc_longitude} offsetLeft={-20} offsetTop={-10} key={bike.vehicle_id}>
+        <Marker className="location-marker"
+          latitude={bike.loc_latitude}
+          longitude={bike.loc_longitude}
+          offsetLeft={-20}
+          offsetTop={-10}
+          key={bike.vehicle_id}
+        >
           <Label className="location-marker-label" pointing='below' color='red'>Bike {bike.has_basket ? 'with' : 'without'} basket</Label>
-          <Icon className="location-marker-icon" name="map marker alternate" color='green' size='big' />
+          <Icon className="location-marker-icon"
+            name="map marker"
+            color='green'
+            size='big'
+            onClick={() => this.handleMarkerClick(bike.loc_latitude, bike.loc_longitude, bike.vehicle_id)} />
         </Marker>
       );
     }
@@ -99,17 +160,14 @@ class BookEV extends React.Component {
         mapStyle="mapbox://styles/mapbox/streets-v10"
         children={this.props.children}
       >
-        <GeolocateControl
-          positionOptions={{ enableHighAccuracy: true }}
-          trackUserLocation={true}
-        />
         {this.renderMarkers()}
+        {this.renderPopup()}
       </ReactMapGL>
-      <Button onClick={this.submitCarTripRequest}>
+      <Button onClick={this.submitRentEVRequest}>
         Book your Ryde!
       </Button>
     </Grid>
   );
 }
 
-export default BookEV;
+export default RentEV;

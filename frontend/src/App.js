@@ -6,7 +6,8 @@ import PrivateRoute from './Components/PrivateRoute';
 import Login from './Components/Login';
 import DashboardPicker from './Components/DashboardPicker';
 import BookCarTrip from './Components/Customer/BookCarTrip';
-import BookEV from './Components/Customer/BookEV';
+import ManageCustomerTrip from './Components/Customer/ManageCustomerTrip';
+import RentEV from './Components/Customer/RentEV';
 import SignoutButton from './Components/SignoutButton';
 import ManagePaymentAccount from './Components/ManagePaymentAccount';
 import history from './history';
@@ -26,7 +27,8 @@ function App() {
           </Switch>
         </Route>
         <PrivateRoute path="/bookCarTrip" component={BookCarTrip} />
-        <PrivateRoute path="/rentVehicle" component={BookEV} />
+        <PrivateRoute path="/manageCustomerTrip" component={ManageCustomerTrip} />
+        <PrivateRoute path="/rentVehicle" component={RentEV} />
         <PrivateRoute path="/managePaymentAccount" component={ManagePaymentAccount} />
         <PrivateRoute path="/" component={SignoutButton} />
       </Router>

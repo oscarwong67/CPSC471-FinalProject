@@ -1,7 +1,6 @@
 import React from 'react';
-import { Button, Image } from 'semantic-ui-react';
+import { Button } from 'semantic-ui-react';
 import Dashboard from '../Dashboard';
-import mapImg from './../../images/map.png';
 import history from '../../history';
 const axios = require('axios');
 
@@ -23,7 +22,7 @@ class CustomerDashboard extends React.Component {
           currentTripId: response.data.tripId
         });
       }
-    }).then((error) => {
+    }).catch((error) => {
       console.log(error);
     })
   }
@@ -34,9 +33,11 @@ class CustomerDashboard extends React.Component {
       <Dashboard />
       {
         this.state.currentTripId ?
-          <Button>
-            Manage Current Ryde
-          </Button> 
+          <Button 
+            onClick={this.manageTrip}
+            content='Manage Current Ryde'
+            icon='setting'
+          />            
           : <div>
             <Button
               onClick={this.bookCarTrip}
@@ -50,7 +51,6 @@ class CustomerDashboard extends React.Component {
             />
           </div>
       }
-      <Image src={mapImg} size='massive' centered bordered />
     </div>
   );
 
@@ -62,6 +62,9 @@ class CustomerDashboard extends React.Component {
     history.push('/rentVehicle');
   }
 
+  manageTrip = () => {
+    history.push('/manageCustomerTrip');
+  }
 }
 
 export default CustomerDashboard;
