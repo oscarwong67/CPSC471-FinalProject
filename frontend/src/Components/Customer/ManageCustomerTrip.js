@@ -32,7 +32,13 @@ class ManageCustomerTrip extends React.Component {
         userId: localStorage.getItem('accountId')
       }
     }).then((response) => {
-      
+      if (response.data.success) {
+        this.setState({
+          currentTrip: response.data.trip
+        })
+      } else {
+        console.error(response);
+      }
     }).catch((error) => {
       console.error(error);
     });

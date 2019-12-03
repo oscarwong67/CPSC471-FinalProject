@@ -267,7 +267,7 @@ routes.get('/api/getCustomerTrip', async (req, res) => {
     if(!carTrip.length) {
       res.status(200).json({success: true, type: 'electricVehicleTrip', trip: customersTrips[0]});
     } else {
-      res.status(200).json({success: true, type: 'carTrip', trip: customersTrips});
+      res.status(200).json({success: true, type: 'carTrip', trip: customersTrips[0]});
     }
    } catch (error) {
      console.log(error);
