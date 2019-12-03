@@ -1,7 +1,7 @@
 import React from 'react';
-import ReactMapGL, { GeolocateControl, Marker } from "react-map-gl";
+import ReactMapGL, { Marker } from "react-map-gl";
 import { Grid, Icon, Label, Button } from 'semantic-ui-react'
-import "../../Styles/BookCarTrip.css"
+import "../../Styles/MapStyle.css"
 import history from '../../history';
 const axios = require('axios');
 
@@ -108,17 +108,13 @@ class BookCarTrip extends React.Component {
         mapStyle="mapbox://styles/mapbox/streets-v10"
         children={this.props.children}
       >
-        <GeolocateControl
-          positionOptions={{ enableHighAccuracy: true }}
-          trackUserLocation={true}
-        />
-        <Marker className="user-location-marker" latitude={this.state.latitude} longitude={this.state.longitude} offsetLeft={-20} offsetTop={-10}>
-          <Label className="user-location-marker-label" pointing='below' color='red'>You are Here!</Label>
-          <Icon className="user-location-marker-icon" name="map marker" aria-label="You are Here!" color='green' size='big' />
+        <Marker className="location-marker" latitude={this.state.latitude} longitude={this.state.longitude} offsetLeft={-20} offsetTop={-10}>
+          <Label className="location-marker-label" pointing='below' color='red'>You are Here!</Label>
+          <Icon className="location-marker-icon" name="map marker" aria-label="You are Here!" color='green' size='big' />
         </Marker>
         {
           this.state.destinationSelected ?
-            <Marker className="user-location-marker"
+            <Marker className="location-marker"
               latitude={this.state.destLatitude}
               longitude={this.state.destLongitude}
               offsetLeft={-20}
@@ -126,8 +122,8 @@ class BookCarTrip extends React.Component {
               draggable
               onDragEnd={this.handleDragEnd}
             >
-              <Label className="user-location-marker-label" pointing='below'>This is where you're going!</Label>
-              <Icon className="user-location-marker-icon" name="map marker" aria-label="You are Here!" color='red' size='big' />
+              <Label className="location-marker-label" pointing='below'>This is where you're going!</Label>
+              <Icon className="location-marker-icon" name="map marker" aria-label="You are Here!" color='red' size='big' />
             </Marker>
             : null
         }

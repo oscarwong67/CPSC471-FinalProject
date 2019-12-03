@@ -1,0 +1,6 @@
+note: i started this late so it def doesn't have everything
+
+- dropped location entity type
+- made trip pk just trip_id
+- charges got its own id
+- added "type" for user, electric_vehicle
