@@ -1,7 +1,8 @@
 import React from 'react';
-import { Grid, Header, Label, Icon } from 'semantic-ui-react';
+import { Grid, Header, Label, Icon, Button } from 'semantic-ui-react';
 import ReactMapGL, { Marker } from "react-map-gl";
 import '../../Styles/MapStyle.css';
+const axios = require('axios');
 
 const defaultWidth = '80vw';
 const defaultHeight = '40vh';
@@ -26,6 +27,24 @@ class ManageCustomerTrip extends React.Component {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(this.updatePosition)
     }
+    axios.get('http://localhost:5000/api/getCustomerTrip', {
+      params: {
+        userId: localStorage.getItem('accountId')
+      }
+    }).then((response) => {
+      if (response.data.success) {
+        this.setState({
+          currentTrip: response.data.trip
+        })
+      } else {
+        console.error(response);
+      }
+    }).catch((error) => {
+      console.error(error);
+    });
+  }
+  endCustomerTrip = () => {
+
   }
   updatePosition = (position) => {
     const viewport = this.state.viewport;
@@ -48,7 +67,7 @@ class ManageCustomerTrip extends React.Component {
   }
   renderCarTripMarkers = () => {
     return (
-      this.state.currentTrip.type === "car" &&
+      this.state.currentTrip.type === "carTrip" &&
       (<div>
         <Marker className="location-marker"
           latitude={this.state.currentTrip.dest_latitude}
@@ -73,7 +92,7 @@ class ManageCustomerTrip extends React.Component {
   }
   renderEVCurrentLocationMarker = () => {
     return (
-      this.state.currentTrip.type === "ev" &&
+      this.state.currentTrip.type === "electricVehicleTrip" &&
       (<Marker className="location-marker"
         latitude={this.state.latitude}
         longitude={this.state.longitude}
@@ -99,6 +118,7 @@ class ManageCustomerTrip extends React.Component {
         {this.renderCarTripMarkers()}
       </ReactMapGL>
       <Header as="h3">Current Ride Info: </Header>
+      <Button content="End Ryde" onClick={this.endCustomerTrip} />
     </Grid>
   );
 }

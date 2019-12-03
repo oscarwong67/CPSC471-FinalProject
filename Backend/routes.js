@@ -265,9 +265,9 @@ routes.get('/api/getCustomerTrip', async (req, res) => {
     if(!customersTrips.length) { throw new Error('Unable to get customers current trip'); }
     const carTrip = await db.query('SELECT * FROM CAR_TRIP AS CT, TRIP AS T WHERE CT.trip_id=?' [customersTrips.trip_id]);
     if(!carTrip.length) {
-      res.status(200).json({success: true, status: 'electricVehicleTrip', customersTrips});
+      res.status(200).json({success: true, type: 'electricVehicleTrip', trip: customersTrips[0]});
     } else {
-      res.status(200).json({success: true, status: 'carTrip', customersTrips});
+      res.status(200).json({success: true, type: 'carTrip', trip: customersTrips[0]});
     }
    } catch (error) {
      console.log(error);
@@ -337,6 +337,14 @@ routes.post('/api/setCleanupFee', async (req, res) => {
     console.log(error);
     res.status(400).json({ success: false });
   }
+});
+
+routes.get('/api/getDriverTripStatus', async (req, res) => {
+  // let me (oscar) do this one, i have a plan
+});
+
+routes.get('/api/getDriverTrip', async (req, res) => {
+  //  used to populate driver manage trip page
 });
 
 module.exports = routes;
