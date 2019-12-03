@@ -1,8 +1,9 @@
 import React from 'react';
-import { Grid, Header, Label, Icon, Button } from 'semantic-ui-react';
+import { Grid, Header, Label, Icon, Button, Container } from 'semantic-ui-react';
 import ReactMapGL, { Marker } from "react-map-gl";
 import '../../Styles/MapStyle.css';
 const axios = require('axios');
+const moment = require('moment');
 
 const defaultWidth = '80vw';
 const defaultHeight = '40vh';
@@ -32,6 +33,7 @@ class ManageCustomerTrip extends React.Component {
         userId: localStorage.getItem('accountId')
       }
     }).then((response) => {
+      console.log(response.data);
       if (response.data.success) {
         this.setState({
           currentTrip: response.data.trip
@@ -65,6 +67,34 @@ class ManageCustomerTrip extends React.Component {
       viewport
     })
   }
+  renderCarTripInfo = () => {
+    return (
+      <div>
+        <p>Driver: {this.state.currentTrip.fname + " " + this.state.currentTrip.lname}</p>
+      </div>
+    );
+  }
+  renderTripInfo = () => {
+    if (Object.entries(this.state.currentTrip).length !== 0) {
+      let extraTripInfo = null;
+      if (this.state.currentTrip === "carTrip") {
+        extraTripInfo = this.renderCarTripInfo();
+      }
+      const startDate = moment(this.state.currentTrip.date).format("dddd, MMMM Do YYYY");
+      const startTime = moment(this.state.currentTrip.start_time.slice(0, 5), 'hh:mm').format('h:mm a');
+      const currentTime = moment().format("h:mm a");
+      const currentDate = moment().format("dddd, MMMM, Do YYYY");
+      return (
+        <div>
+          <p>Start Date: {startDate}</p>
+          <p>Start Time: {startTime}</p>
+          <p>Current Date: {currentDate}</p>
+          <p>Current Time: {currentTime}</p>
+          {extraTripInfo}
+        </div>
+      );
+    }
+  }
   renderCarTripMarkers = () => {
     return (
       this.state.currentTrip.type === "carTrip" &&
@@ -75,7 +105,7 @@ class ManageCustomerTrip extends React.Component {
           offsetLeft={-20}
           offsetTop={-10}
         >
-          <Label className="location-marker-label" pointing='below'>This is where you're going!</Label>
+          <Label className="location-marker-label" pointing='below' color='red'>This is where you're going!</Label>
           <Icon className="location-marker-icon" name="map marker" color='green' size='big' />
         </Marker>
         <Marker className="location-marker"
@@ -99,7 +129,7 @@ class ManageCustomerTrip extends React.Component {
         offsetLeft={-20}
         offsetTop={-10}
       >
-        <Label className="location-marker-label" pointing='below'>This is where you are!</Label>
+        <Label className="location-marker-label" pointing='below' color='red'>This is where you are!</Label>
         <Icon className="location-marker-icon" name="map marker" color='green' size='big' />
       </Marker>)
     );
@@ -117,7 +147,10 @@ class ManageCustomerTrip extends React.Component {
         {this.renderEVCurrentLocationMarker()}
         {this.renderCarTripMarkers()}
       </ReactMapGL>
-      <Header as="h3">Current Ride Info: </Header>
+      <Container>
+        <Header as="h3">Current Ride Info: </Header>
+        {this.renderTripInfo()}
+      </Container>
       <Button content="End Ryde" onClick={this.endCustomerTrip} />
     </Grid>
   );

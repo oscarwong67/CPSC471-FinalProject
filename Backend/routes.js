@@ -260,14 +260,15 @@ routes.get('/api/getCustomerTrip', async (req, res) => {
     //  in both of the above, make sure that end_time is NULL for trip (use IS NULL not = NULL)
     //  end_time being null means the customer hasn't ended it yet
     //  just return everything i guess lol
-    const customersTrips = await db.query('SELECT * FROM CUSTOMER AS C, TRIP AS TR, TAKES AS TA WHERE C.user_id=TA.user_who_initiated_trip_id AND TR.Trip_id=TA.trip_id AND TR.end_time IS NULL AND C.user_id=?', 
+    const customersTrips = await db.query('SELECT * FROM CUSTOMER AS C, TRIP AS TR, TAKES AS TA WHERE C.user_id=TA.user_id AND TR.Trip_id=TA.trip_id AND TR.end_time IS NULL AND C.user_id=?', 
     [customerId]);
     if(!customersTrips.length) { throw new Error('Unable to get customers current trip'); }
-    const carTrip = await db.query('SELECT * FROM CAR_TRIP AS CT, TRIP AS T WHERE CT.trip_id=?' [customersTrips.trip_id]);
-    if(!carTrip.length) {
-      res.status(200).json({success: true, type: 'electricVehicleTrip', trip: customersTrips[0]});
+    const trip_id = customersTrips[0].trip_id;
+    const carTrips = await db.query('SELECT * FROM CAR_TRIP AS CT, TRIP AS T, USER AS U WHERE CT.trip_id=? AND CT.trip_id=T.trip_id AND U.user_id=CT.driver_id', [trip_id]);
+    if(!carTrips.length) {
+      res.status(200).json({success: true, trip: {...customersTrips[0], type: 'electricVehicleTrip'}});
     } else {
-      res.status(200).json({success: true, type: 'carTrip', trip: customersTrips[0]});
+      res.status(200).json({success: true, trip: {...carTrips[0], type: 'carTrip'}});
     }
    } catch (error) {
      console.log(error);
