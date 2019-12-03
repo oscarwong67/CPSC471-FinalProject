@@ -138,10 +138,12 @@ routes.post('/api/chargeElectricVehicle', async (req, res) => {
 
     const chargerPayRate = await  db.query('SELECT charge_price_per_percent FROM CHARGER WHERE user_id=?', [user_id]);
     if (!chargerPayRate.length){ throw new Error('Unable to get charger pay rate'); }
+
     const getOldBalance = await db.query('SELECT balance FROM PAYMENT_ACCOUNT WHERE user_id=?', [user_id]);
     if (!getOldBalance.length){ throw new Error('Unable to get charger account balance'); }
     const payAmount = helper.calcPayAmount(chargerPayRate[0].charge_price_per_percent, chargePercentage);
     const newBalance = helper.calcNewBalance(payAmount, getOldBalance[0].balance);
+
     const payCharger = await db.query('UPDATE PAYMENT_ACCOUNT SET balance=? WHERE user_id=?', [newBalance, user_id]);
     if (!payCharger.affectedRows) { throw new Error('Unable to update electric vehicle percentage'); }
     res.status(200).json({ success: true});
@@ -151,35 +153,34 @@ routes.post('/api/chargeElectricVehicle', async (req, res) => {
   }
 });
 
-routes.post('/api/addFunds', (req, res) => {
+routes.post('/api/addFunds', async (req, res) => {
   const user_id = req.body.userId;
   const amountAdded = req.body.amount;
 
-  db.query('SELECT balance FROM PAYMENT_ACCOUNT WHERE user_id=?', [user_id], (error, results) => {
-    if (error) throw error;
-    if (results.length > 0) {
-      const oldBalance = results[0].balance;
-      const balance = helper.calcNewBalance(amountAdded, oldBalance);
-      db.query('UPDATE PAYMENT_ACCOUNT SET balance=? WHERE user_id=?', [balance, user_id], (error, results) => {
-        if (error) throw error;
-      })
-      res.status(200).json({ success: true });
-    } else {
-      res.status(200).json({ success: false });
-    }
-  })
+  try {
+    const getBalance = await db.query('SELECT balance FROM PAYMENT_ACCOUNT WHERE user_id=?', [user_id]);
+    if (!getBalance.length) { throw new Error('Unable to select balance from payment account'); }
+    const oldBalance = getBalance.balance;
+    const balance = helper.calcNewBalance(amountAdded, oldBalance);
+
+    const setNewBalance = await db.query('UPDATE PAYMENT_ACCOUNT SET balance=? WHERE user_id=?', [balance, user_id]);
+    if (!setNewBalance.affectedRows) { throw new Error('Unable to update payment account'); }
+    res.status(200).json({ success: true });
+  } catch(error) {
+    console.log(error);
+    res.status(400).json({ success: false});
+  }
 });
 
 routes.post('/api/withdrawFunds', async (req, res) => {
   const user_id = req.body.userId;
   try{
     const results = await db.query('UPDATE PAYMENT_ACCOUNT SET balance=0 WHERE user_id=?', [user_id]);
-    if (! results.affectedRows) {
-      throw new Error('failed to withdraw account balance');
-    }
+    if (!results.affectedRows) { throw new Error('failed to withdraw account balance'); }
     res.status(200).json({ success: true });
   } catch(error) {
-    res.status(200).json({ success: false });
+    console.log(error);
+    res.status(400).json({ success: false });
   }
 });
 
@@ -192,7 +193,7 @@ routes.post('/api/bookCarTrip', async (req, res) => {
   const distance = helper.calcDistanceKM(startLat, startLng, destLat, destLng);
 
   try {
-    const selectAvailableDriver = await db.query('SELECT user_id FROM DRIVER WHERE availability=1');
+    const selectAvailableDriver = await db.query('SELECT user_id FROM DRIVER WHERE availability=true');
     if (!selectAvailableDriver.length) { throw new Error('Unable to find find available vehicle'); }
     const driverId = selectAvailableDriver.user_id;
     //  create a new trip
@@ -210,7 +211,7 @@ routes.post('/api/bookCarTrip', async (req, res) => {
     if (!createTrip.affectedRows) { throw new Error('Unable to create trip'); }
     const tripId = results.insertId;
     //  set driver status to unavailable
-    const updateDriver = await db.query('UPDATE DRIVER SET availability=0 WHERE user_id=?', [driverId]);
+    const updateDriver = await db.query('UPDATE DRIVER SET availability=false WHERE user_id=?', [driverId]);
     if (!updateDriver.affectedRows) { throw new Error('Unable to update drivers status'); }
     //  create a new car trip
     const createCarTrip = await db.query('INSERT INTO CAR_TRIP SET ?', { trip_id: tripId, driver_id: driverId });
@@ -225,17 +226,16 @@ routes.post('/api/bookCarTrip', async (req, res) => {
   }
 });
 
-routes.get('/api/getCustomerTripStatus', (req, res) => {
+routes.get('/api/getCustomerTripStatus', async (req, res) => {
   const userId = req.query.userId;
-  db.query('SELECT * FROM CUSTOMER AS C, TAKES AS TA, TRIP AS TR WHERE end_time IS NULL AND C.user_id=TA.user_id AND TA.Trip_id=TR.trip_id AND C.user_id=?',
-    [userId], (error, results) => {
-      if (error) throw error;
-      if (results.length > 0) {
-        res.status(200).json({ success: true, message: 'Trip loaded successfully.', tripId: results[0].trip_id })
-      } else {
-        res.status(200).json({ success: false, message: 'You are not currently on a trip!' });
-      }
-    });
+  try {
+    const getCustomerTrip = await db.query('SELECT * FROM CUSTOMER AS C, TAKES AS TA, TRIP AS TR WHERE end_time IS NULL AND C.user_id=TA.user_id AND TA.Trip_id=TR.trip_id AND C.user_id=?', [userId]);
+    if (!getCustomerTrip.length) { throw new Error('Unable to get customers trip status'); }
+    res.status(200).json({ success: true, message: 'Trip loaded successfully.', tripId: getCustomerTrip.trip_id });
+  } catch(error) {
+    console.log(error);
+    res.status(400).json({ success: false});
+  }
 });
 
 routes.get('/api/getAvailableElectricVehicles', async (req, res) => {
@@ -250,13 +250,25 @@ routes.get('/api/getAvailableElectricVehicles', async (req, res) => {
   }
 });
 
-routes.get('/api/getCustomerTripStatus', async (req, res) => {
+routes.get('/api/getCustomerTrip', async (req, res) => {
+  const customerId = req.query.userId;
    try {
     //  probably need to join customer, trip, takes
     //  and do a SEPERATE query where you join customer, trip, takes, and car_trip
     //  in both of the above, make sure that end_time is NULL for trip (use IS NULL not = NULL)
     //  end_time being null means the customer hasn't ended it yet
     //  just return everything i guess lol
+    const customersTrips = await db.query('SELECT * FROM CUSTOMER AS C, TRIP AS TR, TAKES AS TA WHERE C.user_id=TA.user_who_initiated_trip_id AND TR.Trip_id=TA.trip_id AND TR.end_time IS NULL AND C.user_id=?', 
+    [customerId]);
+    const carCustomersTrips = await db.query('SELECT * FROM CUSTOMER AS C, TRIP AS TR, TAKES AS TA, CAR_TRIP AS CTR WHERE C.user_id=TA.user_who_initiated_trip_id AND TR.Trip_id=TA.trip_id AND TR.end_time IS NULL AND TR.trip_id=CTR.trip_id AND C.user_id=?',
+    [customerId]);
+    if(!customersTrips.length && !carCustomersTrips.length) { throw new Error('Unable to get customers current trip'); }
+    
+    if(customersTrips.length && !carCustomersTrips.length) {
+      res.status(200).json({success: true, status: 'electricVehicleTrip', customersTrips});
+    } else {
+      res.status(200).json({success: true, status: 'carTrip', carCustomersTrips});
+    }
    } catch (error) {
      console.log(error);
      res.status(400).json({success: false});
