@@ -90,7 +90,6 @@ routes.get('/api/getCustomerCreditCard', async (req, res) => {
     if (!results.length) throw new Error(`Unable to fetch credit card for user ${accountID}`);
     res.status(200).json({ success: true, message: 'Success!', 'accountId': accountID, 'credit_card': results[0].credit_card });
   } catch (error) {
-    console.log(error);
     res.status(400).json({ 'success': false });
   }
 });
@@ -127,18 +126,24 @@ routes.post('/api/chargeElectricVehicle', async (req, res) => {
   try {
     const insertCharges = await db.query('INSERT INTO CHARGES SET ?', { c_user_id: user_id, vehicle_id: vehicle_id, percentage_charged_by: chargePercentage });
     if (!insertCharges.affectedRows) { throw new Error('Unable to insert into charges'); }
-    
+
     const selectElectricVehicleCharging = await db.query('SELECT battery_percentage FROM ELECTRIC_VEHICLE WHERE vehicle_id=?', [vehicle_id] );
     if (!selectElectricVehicleCharging.length) { throw new Error('Unable to select electric vehicle to charge'); }
-      
-    const oldPercentage = selectElectricVehicleCharging.battery_percentage;
+    const oldPercentage = selectElectricVehicleCharging[0].battery_percentage;
+    console.log(oldPercentage);
     const percentage = helper.calcNewPercentage(chargePercentage, oldPercentage);
-
+    console.log(percentage);
     const updateElectricVehiclePercent = await db.query('UPDATE ELECTRIC_VEHICLE SET battery_percentage=? WHERE vehicle_id=?', [percentage, vehicle_id]);
     if (!updateElectricVehiclePercent.affectedRows) { throw new Error('Unable to update electric vehicle percentage'); }
 
-    //  TODO: add funds to chargers account
-
+    const chargerPayRate = await  db.query('SELECT charge_price_per_percent FROM CHARGER WHERE user_id=?', [user_id]);
+    if (!chargerPayRate.length){ throw new Error('Unable to get charger pay rate'); }
+    const getOldBalance = await db.query('SELECT balance FROM PAYMENT_ACCOUNT WHERE user_id=?', [user_id]);
+    if (!getOldBalance.length){ throw new Error('Unable to get charger account balance'); }
+    const payAmount = helper.calcPayAmount(chargerPayRate[0].charge_price_per_percent, chargePercentage);
+    const newBalance = helper.calcNewBalance(payAmount, getOldBalance[0].balance);
+    const payCharger = await db.query('UPDATE PAYMENT_ACCOUNT SET balance=? WHERE user_id=?', [newBalance, user_id]);
+    if (!payCharger.affectedRows) { throw new Error('Unable to update electric vehicle percentage'); }
     res.status(200).json({ success: true});
   } catch(error) {
     console.log(error);

@@ -40,4 +40,8 @@ const calcNewBalance = (amountAdded, oldBalance) => {
     return parseInt(amountAdded, 10) + parseInt(oldBalance, 10);
 }
 
-module.exports = { calcDistanceKM, calcFare, currentTime, currentDate, calcTripEnd, calcNewPercentage, calcNewBalance }
+const calcPayAmount = (payRate, chargePercentage) => {
+    return payRate * chargePercentage;
+}
+
+module.exports = { calcDistanceKM, calcFare, currentTime, currentDate, calcTripEnd, calcNewPercentage, calcNewBalance, calcPayAmount }

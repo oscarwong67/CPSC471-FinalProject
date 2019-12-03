@@ -16,36 +16,33 @@ class ChargerDashboard extends React.Component{
     <div>
       <Dashboard/>
       <Grid columns = {3}>
-      <Grid.Column></Grid.Column>
-        <Grid.Column>
-          <Form>
-            <Form.Group widths='equal'>
-              <Form.Input
-                label='vehicle id'
-                placeholder='vehicle id'
-                value = {this.state.vehicleId}
-                onChange = {this.handleUpdateVehicleId}
-              />
-              <Form.Input
-                label='percentage'
-                icon = 'percent'
-                placeholder='percentage'
-                value = {this.state.percentage}
-                onChange = {this.handleUpdatePercentage}
-              />
-            </Form.Group>
-          </Form>
-        </Grid.Column>
         <Grid.Column></Grid.Column>
-
+          <Grid.Column>
+            <Form>
+              <Form.Group widths='equal'>
+                <Form.Input
+                  label = 'vehicle id'
+                  placeholder = 'vehicle id'
+                  value = {this.state.vehicleId}
+                  onChange = {this.handleUpdateVehicleId}
+                />
+                <Form.Input
+                  label ='percentage'
+                  icon = 'percent'
+                  placeholder ='percentage'
+                  value = {this.state.percentage}
+                  onChange = {this.handleUpdatePercentage}
+                />
+              </Form.Group>
+            </Form>
+          </Grid.Column>
+        <Grid.Column></Grid.Column>
       </Grid>
-        
-
         <Button
         size = 'large'
-        onClick = {this.chargeElectricVehicle}>
-          Enter
-        </Button>
+        onClick = {this.chargeElectricVehicle}
+        content = 'Enter'
+        />
     </div>    
   );
   chargeElectricVehicle = () => {
