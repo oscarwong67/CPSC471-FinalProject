@@ -246,4 +246,70 @@ routes.get('/api/getAvailableElectricVehicles', async (req, res) => {
   }
 });
 
+routes.get('/api/getCustomerTripStatus', async (req, res) => {
+   try {
+    //  probably need to join customer, trip, takes
+    //  and do a SEPERATE query where you join customer, trip, takes, and car_trip
+    //  in both of the above, make sure that end_time is NULL for trip (use IS NULL not = NULL)
+    //  end_time being null means the customer hasn't ended it yet
+    //  just return everything i guess lol
+   } catch (error) {
+     console.log(error);
+     res.status(400).json({success: false});
+   }
+});
+
+routes.post('/api/rateDriver', async (req, res) => {
+  try {
+    const driverId = req.body.driverId;
+    //  this is a bit of a yikes, but you'll need to count how many car trips they've done
+    //  so we can average the rating properly
+    //  easier to test the SQL in phpmyadmin FIRST before using it here
+  } catch (error) {
+    console.log(error);
+    res.status(400).json({success: false});
+  }
+});
+
+routes.post('/api/rateCustomer', async (req, res) => {
+  try {
+    const customerId = req.body.customerId;
+    //  basically a clone of before but CUSTOMER instead of DRIVER
+    //  you'll need to count how many car trips they've done
+    //  so we can average the rating properly
+    //  easier to test the SQL in phpmyadmin FIRST before using it here
+  } catch (error) {
+    console.log(error);
+    res.status(400).json({success: false});
+  }
+});
+
+routes.post('/api/payForTrip', async (req, res) => {
+  try {
+    const fare = req.body.fare; //  should we pass in the fee, or pass in 
+    const tripId = req.body.tripId; // the tripId and look up the fare instead?
+    //  how about we talk about this amongst the three of us before you actually get to it
+
+    //  maybe we should make it like you check if the trip is a car trip, if yes, we add cleanup_fee to the base fare
+
+    //  btw I think you should ALWAYS add money to the driver
+    //  but if the customer doesn't have enough, we suspend their account (and Ryde just pays the driver the remaining amount)
+    //  (I can add a "suspended" attribute to the customer table and then prevent them on the front end from doing shit)
+  } catch (error) {
+    console.log(error);
+    res.status(400).json({success: false});
+  }
+});
+
+routes.post('/api/setCleanupFee', async (req, res) => {
+  try {
+    const cleanupFee = req.body.cleanupFee;
+    const tripId = req.body.tripId;
+    //  set cleanup fee in car_trip
+  } catch (error) {
+    console.log(error);
+    res.status(400).json({success: false});
+  }
+});
+
 module.exports = routes;
