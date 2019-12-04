@@ -336,7 +336,7 @@ routes.post('/api/rateCustomer', async (req, res) => {
     const CustomersOldRating = await db.query('SELECT customer_rating FROM CUSTOMER WHERE user_id=?', [customerId]);
     if(!CustomersOldRating.length) { throw new Error('Unable to get customers rating'); }
 
-    const newRating = helper.calcRating(CustomerTrips[0].count, CustomersOldRating[0].driver_rating, customerRating);
+    const newRating = helper.calcRating(CustomerTrips[0].count, CustomersOldRating[0].customer_rating, customerRating);
     const CustomersUpdateRating = await db.query('UPDATE CUSTOMER SET customer_rating=? WHERE user_id=?', [newRating, customerId]);
     if(!CustomersUpdateRating.affectedRows) { throw new Error('Unable to update customers rating'); }
     res.status(200).json({ success: true });
