@@ -25,21 +25,21 @@ class DriverTripEnded extends React.Component{
       }
     }).catch((error) => {
       console.log(error);
-    })
-    // axios.get('http://localhost:5000/api/payDriver', {
-    //   params: {
-    //     UserId: localStorage.getItem('accountId'),
-    //     fare: this.state.currentTrip.fare
-    //   }
-    // }).then((response) => {
-    //   if (response.data.success) {
-    //     this.setState({
-    //       currentTrip: response.data.trip
-    //     });
-    //   }
-    // }).catch((error) => {
-    //   console.log(error);
-    // })
+    });
+    axios.get('http://localhost:5000/api/payDriver', {
+      params: {
+        userId: localStorage.getItem('accountId'),
+        fare: this.state.currentTrip.fare
+      }
+    }).then((response) => {
+      if (response.data.success) {
+        this.setState({
+          currentTrip: response.data.trip
+        });
+      }
+    }).catch((error) => {
+      console.log(error);
+    });
   }
   render = () => (
     <div>

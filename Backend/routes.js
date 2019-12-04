@@ -346,6 +346,18 @@ routes.post('/api/rateCustomer', async (req, res) => {
   }
 });
 
+routes.post('/api/getDriverRating', async (req, res) => {
+  const userId = req.query.userId;
+  try {
+    const rating = await db.query('SELECT driver_rating FROM DRIVER WHERE user_id=?', [userId]);
+    if(!rating.length) { throw new Error('Unable to get driver\'s rating'); }
+    res.status(400).json({ success: true, rating });
+  } catch (error) {
+    console.log(error);
+    res.status(400).json({ success: false });
+  }
+});
+
 routes.post('/api/payForTrip', async (req, res) => {
   try {
     const fare = req.body.fare; //  should we pass in the fee, or pass in 
