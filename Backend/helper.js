@@ -3,6 +3,7 @@ const moment = require('moment');
 
 const kmPerHour = 60;
 const ratePerKm = 2.5;
+const percentPerKm = 3;
 
 const calcDistanceKM = (startLat, startLng, destLat, destLng) => {
     return geolib.getDistance(
@@ -49,4 +50,14 @@ const calcRating = (count, driversOldRating, driverRating) => {
     return result / (parseInt(count, 10) + 1);
 }
 
-module.exports = { calcDistanceKM, calcFare, currentTime, currentDate, calcTripEnd, calcNewPercentage, calcNewBalance, calcPayAmount, calcRating }
+const calcChargeAfterReduction = (startLat, startLng, destLat, destLng, oldCharge) => {
+    const distance = calcDistanceKM(startLat, startLng, destLat, destLng);
+    const reduction = distance * percentPerKm;
+    const newCharge = oldCharge - reduction;
+    if (newCharge < 0) {
+        return 0;
+    }
+    return newCharge;
+}
+
+module.exports = { calcDistanceKM, calcFare, currentTime, currentDate, calcTripEnd, calcNewPercentage, calcNewBalance, calcPayAmount, calcRating, calcChargeAfterReduction }
