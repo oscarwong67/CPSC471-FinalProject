@@ -3,9 +3,22 @@ import DriverCurrentTrip from './DriverCurrentTrip'
 import DriverTripEnded from './DriverTripEnded'
 const axios = require('axios');
 
-function chooseDashboard() {
-  const accountType = axios.post();
-  switch (accountType) {
+function chooseDriverTripsPage() {
+  const TripStatus = null;
+  axios.get('http://localhost:5000/api/getDriverTripStatus', {
+    params: {
+      userId: localStorage.getItem('accountId')
+    }
+  }).then((response) => {
+    if (response.data.success) {
+      this.setState({
+        currentTripId: response.data.tripId
+      });
+    }
+  }).catch((error) => {
+    console.log(error);
+  })
+  switch (TripStatus) {
       case 'idk1':
           return <DriverCurrentTrip />;
       case 'idk2':
@@ -19,6 +32,6 @@ function chooseDashboard() {
   }
 }
 
-const DashboardPicker = () => chooseDashboard();
+const TripPagePicker = () => chooseDriverTripsPage();
 
-export default DashboardPicker;
+export default TripPagePicker;

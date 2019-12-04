@@ -11,6 +11,7 @@ class ManagePaymentAccount extends React.Component{
       amount: '',
       balance: 0,
       creditCard: '',
+      hasCreditCard: false
     }
   }
   componentDidMount() {
@@ -34,7 +35,8 @@ class ManagePaymentAccount extends React.Component{
     }).then((response) => {
       if (response.data.success){
         this.setState({
-          creditCard: response.data.credit_card
+          creditCard: response.data.credit_card,
+          hasCreditCard: true
         })
       }
     }).catch((error) => {
@@ -78,7 +80,7 @@ class ManagePaymentAccount extends React.Component{
     <div>
       <Divider horizontal>Add Funds</Divider>
       {
-        (this.state.creditCard !== '') ?
+        (this.state.hasCreditCard) ?
         this.renderHasCreditCard()
         : this.renderAddCreditCard()
       }
@@ -96,7 +98,7 @@ class ManagePaymentAccount extends React.Component{
       <Button
         content = 'Add Funds'
         size = 'large'
-        onClick = {this.addFunds}
+        onClick = {this.addCreditCard}
       />
     </div>
   )
@@ -144,6 +146,26 @@ class ManagePaymentAccount extends React.Component{
         if(response.data.success){
           alert('successfully added funds');
           this.setState({ amount: ''})
+          window.location.reload();
+        } else {
+          alert('failed to add funds. Please try again later.');
+        }
+      })
+    }
+  }
+  addCreditCard = () => {
+    if (this.state.creditCard === ''){
+      alert('Please fill out all forms!');
+    } else if(this.state.creditCard <= 0){
+      alert('invalid credit card')
+    } else {
+      axios.post('http://localhost:5000/api/addCreditCard', {
+        creditCard: this.state.creditCard,
+        userId: localStorage.getItem('accountId')
+      }).then((response) => {
+        if(response.data.success){
+          alert('successfully added credit card');
+          // this.setState({ amount: ''})
           window.location.reload();
         } else {
           alert('failed to add funds. Please try again later.');
