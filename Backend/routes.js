@@ -289,7 +289,7 @@ routes.post('/api/rateDriver', async (req, res) => {
     const driversOldRating = await db.query('SELECT driver_rating FROM DRIVER WHERE user_id=?', [driverId]);
     if(!driversOldRating.length) { throw new Error('Unable to get drivers rating'); }
 
-    const newRating = helper.calcRating(driverTrips.count, driversOldRating.driver_rating, driverRating);
+    const newRating = helper.calcRating(driverTrips[0].count, driversOldRating[0].driver_rating, driverRating);
     const driverUpdateRating = await db.query('UPDATE DRIVER SET driver_rating=? WHERE user_id=?', [newRating, driverId]);
     if(!driverUpdateRating.affectedRows) { throw new Error('Unable to update drivers rating'); }
     res.status(200).json({ success: true });
@@ -307,6 +307,16 @@ routes.post('/api/rateCustomer', async (req, res) => {
     //  you'll need to count how many car trips they've done
     //  so we can average the rating properly
     //  easier to test the SQL in phpmyadmin FIRST before using it here
+    const CustomerTrips = await db.query('SELECT COUNT(*) AS count FROM CAR_TRIP AS CT, TAKES AS T WHERE CT.trip_id=T.Trip_id AND T.user_who_initiated_trip_id=? AND CT.driver_ended=true', [customerId]);
+    if(!CustomerTrips.length) { throw new Error('Unable to get customers trips'); }
+
+    const CustomersOldRating = await db.query('SELECT customer_rating FROM CUSTOMER WHERE user_id=?', [customerId]);
+    if(!CustomersOldRating.length) { throw new Error('Unable to get customers rating'); }
+
+    const newRating = helper.calcRating(CustomerTrips[0].count, CustomersOldRating[0].driver_rating, customerRating);
+    const CustomersUpdateRating = await db.query('UPDATE CUSTOMER SET customer_rating=? WHERE user_id=?', [newRating, customerId]);
+    if(!CustomersUpdateRating.affectedRows) { throw new Error('Unable to update customers rating'); }
+    res.status(200).json({ success: true });
   } catch (error) {
     console.log(error);
     res.status(400).json({ success: false });
@@ -324,6 +334,7 @@ routes.post('/api/payForTrip', async (req, res) => {
     //  btw I think you should ALWAYS add money to the driver
     //  but if the customer doesn't have enough, we suspend their account (and Ryde just pays the driver the remaining amount)
     //  (I can add a "suspended" attribute to the customer table and then prevent them on the front end from doing shit)
+    
   } catch (error) {
     console.log(error);
     res.status(400).json({ success: false });
