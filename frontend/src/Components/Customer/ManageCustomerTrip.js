@@ -1,5 +1,5 @@
 import React from 'react';
-import { Grid, Header, Label, Icon, Button, Container } from 'semantic-ui-react';
+import { Grid, Header, Label, Icon, Button, Container, List } from 'semantic-ui-react';
 import ReactMapGL, { Marker } from "react-map-gl";
 import '../../Styles/MapStyle.css';
 const axios = require('axios');
@@ -70,14 +70,20 @@ class ManageCustomerTrip extends React.Component {
   renderCarTripInfo = () => {
     return (
       <div>
-        <p>Driver: {this.state.currentTrip.fname + " " + this.state.currentTrip.lname}</p>
+        <br/> 
+        <List>
+          <List.Item><strong>Driver:</strong> {this.state.currentTrip.fname + " " + this.state.currentTrip.lname}</List.Item>
+          <List.Item><strong>Driver Phone#:</strong> {this.state.currentTrip.phone_no}</List.Item>
+          <List.Item><strong>Car:</strong> {`${this.state.currentTrip.color} ${this.state.currentTrip.make}`}</List.Item>
+          <List.Item><strong>License Plate:</strong> {this.state.currentTrip.license_plate}</List.Item>
+        </List>
       </div>
     );
   }
   renderTripInfo = () => {
     if (Object.entries(this.state.currentTrip).length !== 0) {
       let extraTripInfo = null;
-      if (this.state.currentTrip === "carTrip") {
+      if (this.state.currentTrip.type === "carTrip") {
         extraTripInfo = this.renderCarTripInfo();
       }
       const startDate = moment(this.state.currentTrip.date).format("dddd, MMMM Do YYYY");
@@ -85,13 +91,11 @@ class ManageCustomerTrip extends React.Component {
       const currentTime = moment().format("h:mm a");
       const currentDate = moment().format("dddd, MMMM, Do YYYY");
       return (
-        <div>
-          <p>Start Date: {startDate}</p>
-          <p>Start Time: {startTime}</p>
-          <p>Current Date: {currentDate}</p>
-          <p>Current Time: {currentTime}</p>
+        <List>
+          <List.Item><strong>Start Date & Time:</strong> {startDate} {startTime}</List.Item>
+          <List.Item><strong>Current Date & Time:</strong> {currentDate} {currentTime}</List.Item>
           {extraTripInfo}
-        </div>
+        </List>
       );
     }
   }

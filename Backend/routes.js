@@ -195,9 +195,9 @@ routes.post('/api/bookCarTrip', async (req, res) => {
   const distance = helper.calcDistanceKM(startLat, startLng, destLat, destLng);
 
   try {
-    const selectAvailableDriver = await db.query('SELECT user_id FROM DRIVER WHERE availability=true');
+    const selectAvailableDriver = await db.query('SELECT user_id FROM DRIVER WHERE availability=1');
     if (!selectAvailableDriver.length) { throw new Error('Unable to find find available vehicle'); }
-    const driverId = selectAvailableDriver.user_id;
+    const driverId = selectAvailableDriver[0].user_id;
     //  create a new trip
     const createTrip = await db.query('INSERT INTO TRIP SET ?', {
       pickup_latitude: startLat,
@@ -211,9 +211,9 @@ routes.post('/api/bookCarTrip', async (req, res) => {
       date: helper.currentDate()
     });
     if (!createTrip.affectedRows) { throw new Error('Unable to create trip'); }
-    const tripId = results.insertId;
+    const tripId = createTrip.insertId;
     //  set driver status to unavailable
-    const updateDriver = await db.query('UPDATE DRIVER SET availability=false WHERE user_id=?', [driverId]);
+    const updateDriver = await db.query('UPDATE DRIVER SET availability=0 WHERE user_id=?', [driverId]);
     if (!updateDriver.affectedRows) { throw new Error('Unable to update drivers status'); }
     //  create a new car trip
     const createCarTrip = await db.query('INSERT INTO CAR_TRIP SET ?', { trip_id: tripId, driver_id: driverId });
@@ -233,7 +233,7 @@ routes.get('/api/getCustomerTripStatus', async (req, res) => {
   try {
     const getCustomerTrip = await db.query('SELECT * FROM CUSTOMER AS C, TAKES AS TA, TRIP AS TR WHERE end_time IS NULL AND C.user_id=TA.user_id AND TA.Trip_id=TR.trip_id AND C.user_id=?', [userId]);
     if (!getCustomerTrip.length) { throw new Error('Unable to get customers trip status'); }
-    res.status(200).json({ success: true, message: 'Trip loaded successfully.', tripId: getCustomerTrip.trip_id });
+    res.status(200).json({ success: true, message: 'Trip loaded successfully.', tripId: getCustomerTrip[0].trip_id });
   } catch(error) {
     console.log(error);
     res.status(400).json({ success: false});
@@ -264,7 +264,7 @@ routes.get('/api/getCustomerTrip', async (req, res) => {
     [customerId]);
     if(!customersTrips.length) { throw new Error('Unable to get customers current trip'); }
     const trip_id = customersTrips[0].trip_id;
-    const carTrips = await db.query('SELECT * FROM CAR_TRIP AS CT, TRIP AS T, USER AS U WHERE CT.trip_id=? AND CT.trip_id=T.trip_id AND U.user_id=CT.driver_id', [trip_id]);
+    const carTrips = await db.query('SELECT * FROM CAR_TRIP AS CT, TRIP AS T, USER AS U, VEHICLE AS V, CAR AS C, DRIVER AS D WHERE CT.trip_id=? AND CT.trip_id=T.trip_id AND U.user_id=CT.driver_id AND V.vehicle_id=C.vehicle_id AND C.vehicle_id=D.vehicle_id AND D.user_id=U.user_id', [trip_id]);
     if(!carTrips.length) {
       res.status(200).json({success: true, trip: {...customersTrips[0], type: 'electricVehicleTrip'}});
     } else {
