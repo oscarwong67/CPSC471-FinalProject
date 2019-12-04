@@ -364,6 +364,24 @@ routes.post('/api/payForTrip', async (req, res) => {
   }
 });
 
+routes.post('/api/payDriver', async (req, res) => {
+  try {
+    const fare = req.body.fare;
+    const driverId = req.body.userId;
+
+    const driversBalance = await db.query('SELECT balance FROM PAYMENT_ACCOUNT WHERE user_id=?', [driverId]);
+    if(!driversBalance.length) {throw new Error('Unable to get drivers balance'); }
+
+    const newBalance = driversBalance[0].balance + fare;
+    const updateDriverAccount = await db.query('UPDATE PAYMENT_ACCOUNT SET balance=? WHERE user_id=?', [newBalance, driverId]);
+    if(!updateDriverAccount.affectedRows) { throw new Error('Unable to update drivers balance'); }
+    res.status(200).json({ success: true });
+  } catch (error) {
+    console.log(error);
+    res.status(400).json({ success: false });
+  }
+});
+
 routes.post('/api/setCleanupFee', async (req, res) => {
   try {
     const cleanupFee = req.body.cleanupFee;
