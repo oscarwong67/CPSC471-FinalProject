@@ -344,11 +344,31 @@ routes.post('/api/setCleanupFee', async (req, res) => {
 });
 
 routes.get('/api/getDriverTripStatus', async (req, res) => {
-  // let me (oscar) do this one, i have a plan
+  // returns either running, user finished, or driver finished (driver finished means no trip active)
+  const userId = req.query.userId;
+  try {
+    const activeDriverTrips = await db.query('SELECT end_time FROM DRIVER AS D, CAR_TRIP AS CT, TRIP AS TR WHERE (end_time IS NULL OR driver_ended=0) AND D.user_id=CT.driver_id AND CT.trip_id=TR.trip_id AND D.user_id=?', [userId]);
+    if (!activeDriverTrips.length) { throw new Error(`No trips for current driver. ${userId}`); }
+    const status = (activeDriverTrips[0].end_time) ? 'USER_ENDED' : 'ACTIVE';
+    res.status(200).json({ success: true, status });
+  } catch (error) {
+    console.log(error);
+    res.status(400).json({ success: false });
+  }
 });
 
 routes.get('/api/getDriverTrip', async (req, res) => {
   //  used to populate driver manage trip page
+  const userId = req.query.userId;
+  try {
+    const activeDriverTrips = await db.query('SELECT * FROM DRIVER AS D, CAR_TRIP AS CT, TRIP AS TR, TAKES AS TA, USER AS U WHERE (end_time IS NULL OR driver_ended=0) AND D.user_id=CT.driver_id AND CT.trip_id=TR.trip_id AND TA.Trip_id=CT.trip_id AND TA.user_id=U.user_id AND D.user_id=?', [userId]);
+    if (!activeDriverTrips.length) { throw new Error(`No trips for current driver. ${userId}`); }
+    const status = (activeDriverTrips[0].end_time) ? 'USER_ENDED' : 'ACTIVE';
+    res.status(200).json({ success: true, status, trip: activeDriverTrips[0] });
+  } catch (error) {
+    console.log(error);
+    res.status(400).json({ success: false });
+  }
 });
 
 module.exports = routes;
