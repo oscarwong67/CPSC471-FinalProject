@@ -80,7 +80,7 @@ class ManagePaymentAccount extends React.Component{
     <div>
       <Divider horizontal>Add Funds</Divider>
       {
-        (this.state.hasCreditCard) ?
+        (this.state.hasCreditCards) ?
         this.renderHasCreditCard()
         : this.renderAddCreditCard()
       }

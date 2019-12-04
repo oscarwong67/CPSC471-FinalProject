@@ -1,26 +1,25 @@
 import React from 'react';
 import { Input, Button } from 'semantic-ui-react'
 import Dashboard from '../../Dashboard'
-import DriverCurrentTrip from './DriverCurrentTrip'
-import DriverTripEnded from './DriverTripEnded'
+import TripPagePicker from './TripPagePicker'
 const axios = require('axios');
 
 class DriverDashboard extends React.Component{
   constructor(props){
     super(props);
     this.state = {
-      currentTripId: null
+      currentTrip: null
     }
   }
   componentDidMount() {
-    axios.get('http://localhost:5000/api/getDriverTripStatus', {
+    axios.get('http://localhost:5000/api/getDriverTrip', {
       params: {
         userId: localStorage.getItem('accountId')
       }
     }).then((response) => {
       if (response.data.success) {
         this.setState({
-          currentTripId: response.data.tripId
+          currentTrip: response.data.trip
         });
       }
     }).catch((error) => {
@@ -30,18 +29,16 @@ class DriverDashboard extends React.Component{
   render = () => (
     <div>
       <Dashboard />
-      <DriverTripEnded/>
-
-      {/* {
-        this.state.currentTripId ?
+      {
+        this.state.currentTrip ?
         this.renderCurrentTrip()
         : this.renderWaitingForTrip()
-      } */}
+      }
       <h4></h4>
     </div>
   )
   renderCurrentTrip = () => (
-    <DriverCurrentTrip />
+    <TripPagePicker/>
   )
   renderWaitingForTrip = () => (
     <h1>Waiting for Ryde</h1>
