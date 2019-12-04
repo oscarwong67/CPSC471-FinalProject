@@ -105,7 +105,7 @@ routes.post('/api/rentElectricVehicle', async (req, res) => {
     const startLng = rentElectricVehicles[0].loc_longitude;
 
     const tripCreate = await db.query('INSERT INTO TRIP SET ?', {
-      pickup_latitude: startLat, pickup_longitude: startLng, start_time: helper.currentTime(), date: helper.currentDate()
+      pickup_latitude: startLat, pickup_longitude: startLng, start_time: helper.currentTime(), date: helper.currentDate(), ev_id: rentElectricVehicles[0].vehicle_id
     });
     if (!tripCreate.affectedRows) { throw new Error('Unable to create trip'); }
     const trip_id = tripCreate.insertId;
@@ -265,8 +265,8 @@ routes.get('/api/getCustomerTripStatus', async (req, res) => {
 
 routes.get('/api/getAvailableElectricVehicles', async (req, res) => {
   try {
-    const scooters = await db.query('SELECT * FROM ELECTRIC_VEHICLE AS E, SCOOTER AS S WHERE E.vehicle_id=S.vehicle_id AND E.availability=true');
-    const bikes = await db.query('SELECT * FROM ELECTRIC_VEHICLE AS E, BIKE AS B WHERE E.vehicle_id=B.vehicle_id AND E.availability=true');
+    const scooters = await db.query('SELECT * FROM ELECTRIC_VEHICLE AS E, SCOOTER AS S WHERE E.vehicle_id=S.vehicle_id AND E.availability=true AND E.battery_percentage > 0');
+    const bikes = await db.query('SELECT * FROM ELECTRIC_VEHICLE AS E, BIKE AS B WHERE E.vehicle_id=B.vehicle_id AND E.availability=true AND E.battery_percentage > 0');
     if (!scooters.length && bikes.length) throw new Error('No available vehicles in database.');
     res.status(200).json({ success: true, scooters, bikes });
   } catch (error) {
@@ -302,17 +302,18 @@ routes.get('/api/getCustomerTrip', async (req, res) => {
 routes.post('/api/rateDriver', async (req, res) => {
   try {
     const driverId = req.body.driverId;
-    const driverRating = req.body.rating;
+    const driverRating = req.body.driverRating;
     //  this is a bit of a yikes, but you'll need to count how many car trips they've done
     //  so we can average the rating properly
     //  easier to test the SQL in phpmyadmin FIRST before using it here
     const driverTrips = await db.query('SELECT COUNT(*) AS count FROM CAR_TRIP WHERE driver_id=? AND driver_ended=true', [driverId]);
-    if(!driverTrips.length) { throw new Error('Unable to get drivers trips'); }
+    let count = driverTrips.count;
+    if(!driverTrips.length || !count) { count = 0; }
 
     const driversOldRating = await db.query('SELECT driver_rating FROM DRIVER WHERE user_id=?', [driverId]);
     if(!driversOldRating.length) { throw new Error('Unable to get drivers rating'); }
 
-    const newRating = helper.calcRating(driverTrips[0].count, driversOldRating[0].driver_rating, driverRating);
+    const newRating = helper.calcRating(count, driversOldRating[0].driver_rating, driverRating);
     const driverUpdateRating = await db.query('UPDATE DRIVER SET driver_rating=? WHERE user_id=?', [newRating, driverId]);
     if(!driverUpdateRating.affectedRows) { throw new Error('Unable to update drivers rating'); }
     res.status(200).json({ success: true });
@@ -348,16 +349,15 @@ routes.post('/api/rateCustomer', async (req, res) => {
 
 routes.post('/api/payForTrip', async (req, res) => {
   try {
-    const fare = req.body.fare; //  should we pass in the fee, or pass in 
-    const tripId = req.body.tripId; // the tripId and look up the fare instead?
-    //  how about we talk about this amongst the three of us before you actually get to it
-
-    //  maybe we should make it like you check if the trip is a car trip, if yes, we add cleanup_fee to the base fare
-
-    //  btw I think you should ALWAYS add money to the driver
-    //  but if the customer doesn't have enough, we suspend their account (and Ryde just pays the driver the remaining amount)
-    //  (I can add a "suspended" attribute to the customer table and then prevent them on the front end from doing shit)
-    
+    const fare = req.body.fare;
+    const tripId = req.body.tripId;
+    const customerResult = await db.query('SELECT U.user_id, balance FROM USER AS U, TAKES AS T, PAYMENT_ACCOUNT AS P WHERE U.user_id=T.user_id AND P.user_id=U.user_id AND T.Trip_id=?', [tripId]);
+    if (!customerResult.length) throw new Error('Unable to get customer payment account while paying for trip with id ' + tripId);
+    const userId = customerResult[0].user_id;
+    const newBalance = customerResult[0].balance - fare;
+    const payForTripResult = await db.query('UPDATE PAYMENT_ACCOUNT SET BALANCE=? WHERE user_id=?', [newBalance, userId]);
+    if (!payForTripResult.affectedRows) throw new Error('Unable to pay from customer for trip ' + tripId);
+    res.status(200).json({success: true});
   } catch (error) {
     console.log(error);
     res.status(400).json({ success: false });
@@ -422,5 +422,74 @@ routes.get('/api/getDriverTrip', async (req, res) => {
     res.status(400).json({ success: false });
   }
 });
+
+routes.get('/api/calculateEVFare', async (req, res) => {
+  const startLat = req.query.startLat;
+  const startLng = req.query.startLng;
+  const destLat = req.query.destLat;
+  const destLng = req.query.destLng;
+  if (!startLat || !startLng || !destLat || !destLng) {
+    res.status(400).json({success: false});
+  }
+  const distance = helper.calcDistanceKM(startLat, startLng, destLat, destLng);
+  const fare = helper.calcFare(distance);
+  res.status(200).json({success: true, fare});
+});
+
+routes.post('/api/updateEVForTripEnd', async (req, res) => {
+  //  reduce charge and set to available
+  const evId = req.body.evId;
+  const startLat = req.body.startLat;
+  const startLng = req.body.startLng;
+  const destLat = req.body.destLat;
+  const destLng = req.body.destLng;
+  if (!startLat || !startLng || !destLat || !destLng) {
+    res.status(400).json({ success: false });
+    return;
+  }
+  try {
+    const currentChargeResults = await db.query('SELECT battery_percentage FROM ELECTRIC_VEHICLE WHERE vehicle_id=?', [evId]);
+    if (!currentChargeResults.length) throw new Error('Unable to get charge for EV with id ' + evId);
+    const charge = helper.calcChargeAfterReduction(startLat, startLng, destLat, destLng, currentChargeResults[0].battery_percentage);
+    const result = await db.query('UPDATE ELECTRIC_VEHICLE SET availability=1, battery_percentage=? WHERE vehicle_id=?', [charge, evId]);
+    if (!result.affectedRows) throw new Error('Unable to update charge for EV with id ' + evId);
+    res.status(200).json({success: true});
+  } catch (error) {
+    console.log(error);
+    res.status(400).json({success: false})
+  }
+})
+
+routes.post('/api/setEVTripEndLocationAndTime', async (req, res) => {
+  const tripId = req.body.tripId;
+  const startLat = req.body.startLat;
+  const startLng = req.body.startLng;
+  const destLat = req.body.destLat;
+  const destLng = req.body.destLng;
+  const fare = req.body.fare;
+  const distance = helper.calcDistanceKM(startLat, startLng, destLat, destLng);
+  const endTime = helper.currentTime();
+  try {
+    const updateResult = await db.query('UPDATE TRIP SET dest_latitude=?, dest_longitude=?, distance=?, fare=?, end_time=? WHERE trip_id=?', [destLat, destLng, distance, fare, endTime, tripId]);
+    if (!updateResult.affectedRows) throw new Error('Unable to end EV trip for tripid ' + tripId);
+    res.status(200).json({success: true});
+  } catch (error) {
+    console.log(error);
+    res.status(400).json({success: false});
+  }
+});
+
+routes.post('/api/setEndTripTime', async (req, res) => {
+  const tripId = req.body.tripId;
+  const endTime = helper.currentTime();
+  try {
+    const updateTimeResult = await db.query('UPDATE TRIP SET end_time=? WHERE trip_id=?', [endTime, tripId]);
+    if (!updateTimeResult.affectedRows) throw new Error('Unable to end EV trip for tripid ' + tripId);
+    res.status(200).json({ success: true });
+  } catch (error) {
+    console.log(error);
+    res.status(400).json({ success: false });
+  }
+})
 
 module.exports = routes;
