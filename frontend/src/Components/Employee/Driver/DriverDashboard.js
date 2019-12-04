@@ -1,5 +1,5 @@
 import React from 'react';
-import { Input, Button } from 'semantic-ui-react'
+import { Divider } from 'semantic-ui-react'
 import Dashboard from '../../Dashboard'
 import TripPagePicker from './TripPagePicker'
 const axios = require('axios');
@@ -41,7 +41,11 @@ class DriverDashboard extends React.Component{
     <TripPagePicker/>
   )
   renderWaitingForTrip = () => (
-    <h1>Waiting for Ryde</h1>
+    <div>
+      <h1>Waiting for Ryde</h1>
+      <Divider horizontal>Your Rating</Divider>
+    </div>
+    
   )
 }
 

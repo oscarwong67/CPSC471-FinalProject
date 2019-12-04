@@ -84,7 +84,7 @@ class DriverCurrentTrip extends React.Component{
   }
   renderCarTripMarkers = () => {
     return (
-      this.state.currentTrip.type === "carTrip" &&
+      this.state.currentTrip.type &&
       (<div>
         <Marker className="location-marker"
           latitude={this.state.currentTrip.dest_latitude}

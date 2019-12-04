@@ -26,15 +26,29 @@ class DriverTripEnded extends React.Component{
     }).catch((error) => {
       console.log(error);
     })
+    // axios.get('http://localhost:5000/api/payDriver', {
+    //   params: {
+    //     UserId: localStorage.getItem('accountId'),
+    //     fare: this.state.currentTrip.fare
+    //   }
+    // }).then((response) => {
+    //   if (response.data.success) {
+    //     this.setState({
+    //       currentTrip: response.data.trip
+    //     });
+    //   }
+    // }).catch((error) => {
+    //   console.log(error);
+    // })
   }
   render = () => (
     <div>
       <h2>Ryde has ended</h2>
       <h3>How was {this.state.currentTrip.fname} {this.state.currentTrip.lname}?</h3>
       <Rating 
-        icon='star' 
-        defaultRating={3} 
-        maxRating={5} 
+        icon = 'star' 
+        defaultRating = {3} 
+        maxRating = {5} 
         onRate = {this.handleRate}
       />
       <h5></h5>
@@ -49,11 +63,11 @@ class DriverTripEnded extends React.Component{
     this.setState({ customerRating: rating })
   }
   submitRating = () => {
-    axios.get('http://localhost:5000/api/rateCustomer', {
-      params: {
-        customerId: '',
-        customerRating: this.state.rating
-      }
+    console.log(this.state.currentTrip.user_id)
+    console.log(this.state.customerRating)
+    axios.post('http://localhost:5000/api/rateCustomer', {
+        customerId: this.state.currentTrip.user_id,
+        customerRating: this.state.customerRating
     }).then((response) => {
       if (response.data.success) {
         alert('redirecting to dashboard');
