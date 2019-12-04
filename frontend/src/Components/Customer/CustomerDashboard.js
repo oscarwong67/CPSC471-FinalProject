@@ -8,7 +8,8 @@ class CustomerDashboard extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      currentTripId: null
+      currentTripId: null,
+      balance: -1
     }
   }
   componentDidMount() {
@@ -19,9 +20,22 @@ class CustomerDashboard extends React.Component {
     }).then((response) => {
       if (response.data.success) {
         this.setState({
-          currentTripId: response.data.tripId
+          currentTripId: response.data.tripId,
         });
       }
+      axios.get('http://localhost:5000/api/getAccountBalance', {
+        params: {
+          accountId: localStorage.getItem('accountId')
+        }
+      }).then((response) => {
+        if (response.data.success) {
+          this.setState({
+            balance: response.data.accountBalance
+          })
+        }
+      }).catch((error) => {
+        console.error(error);
+      })
     }).catch((error) => {
       console.log(error);
     })
@@ -55,11 +69,19 @@ class CustomerDashboard extends React.Component {
   );
 
   bookCarTrip = () => {
-    history.push('/bookCarTrip');
+    if (this.state.balance > 0) {
+      history.push('/bookCarTrip');
+    } else {
+      alert('Your balance is currently at or below $0. Please add more to book a Ryde.');
+    }
   }
 
   rentVehicle = () => {
-    history.push('/rentVehicle');
+    if (this.state.balance > 0) {
+      history.push('/rentVehicle');
+    } else {
+      alert('Your balance is currently at or below $0. Please add more to book a Ryde.');
+    }
   }
 
   manageTrip = () => {

@@ -36,6 +36,9 @@ routes.post('/api/signup', async (req, res) => {
     });
     if (!userResults.insertId) throw new Error('Unable to insert into USER during signup.');
     const user_id = userResults.insertId;
+    const paymentAccResults = await db.query('INSERT INTO PAYMENT_ACCOUNT SET ?', {
+      user_id
+    });
     if (accountType === "Driver") {
       const license_plate = req.body.licensePlate;
       const color = req.body.color;
@@ -162,15 +165,15 @@ routes.post('/api/addFunds', async (req, res) => {
   try {
     const getBalance = await db.query('SELECT balance FROM PAYMENT_ACCOUNT WHERE user_id=?', [user_id]);
     if (!getBalance.length) { throw new Error('Unable to select balance from payment account'); }
-    const oldBalance = getBalance.balance;
+    const oldBalance = getBalance[0].balance;
     const balance = helper.calcNewBalance(amountAdded, oldBalance);
 
     const setNewBalance = await db.query('UPDATE PAYMENT_ACCOUNT SET balance=? WHERE user_id=?', [balance, user_id]);
     if (!setNewBalance.affectedRows) { throw new Error('Unable to update payment account'); }
     res.status(200).json({ success: true });
-  } catch(error) {
+  } catch (error) {
     console.log(error);
-    res.status(400).json({ success: false});
+    res.status(400).json({ success: false });
   }
 });
 
@@ -182,9 +185,9 @@ routes.post('/api/addCreditCard', async (req, res) => {
     const result = await db.query('INSERT INTO CREDIT_CARD SET ?', { user_id: user_id, credit_card: credit_card });
     if (!result.affectedRows) { throw new Error('Unable add credit card'); }
     res.status(200).json({ success: true });
-  } catch(error) {
+  } catch (error) {
     console.log(error);
-    res.status(400).json({ success: false});
+    res.status(400).json({ success: false });
   }
 });
 
@@ -194,7 +197,7 @@ routes.post('/api/withdrawFunds', async (req, res) => {
     const results = await db.query('UPDATE PAYMENT_ACCOUNT SET balance=0 WHERE user_id=?', [user_id]);
     if (!results.affectedRows) { throw new Error('failed to withdraw account balance'); }
     res.status(200).json({ success: true });
-  } catch(error) {
+  } catch (error) {
     console.log(error);
     res.status(400).json({ success: false });
   }
@@ -234,9 +237,9 @@ routes.post('/api/bookCarTrip', async (req, res) => {
     const createCarTrip = await db.query('INSERT INTO CAR_TRIP SET ?', { trip_id: tripId, driver_id: driverId });
     if (!createCarTrip.affectedRows) { throw new Error('Unable to create car trip'); }
     //  create a "takes" entity
-    if(otherUser) {
+    if (otherUser) {
       const checkOtherUser = await db.query('SELECT user_id FROM CUSTOMER WHERE user_id=?', [otherUser]);
-      if(!checkOtherUser.length) {throw new Error('Unable to get other user'); }
+      if (!checkOtherUser.length) { throw new Error('Unable to get other user'); }
 
       const createTakes = await db.query('INSERT INTO TAKES SET ?', { Trip_id: tripId, user_id: otherUser, user_who_initiated_trip_id: userId });
       if (!createTakes.affectedRows) { throw new Error('Unable to create takes with other user'); }
@@ -254,12 +257,15 @@ routes.post('/api/bookCarTrip', async (req, res) => {
 routes.get('/api/getCustomerTripStatus', async (req, res) => {
   const userId = req.query.userId;
   try {
-    const getCustomerTrip = await db.query('SELECT * FROM CUSTOMER AS C, TAKES AS TA, TRIP AS TR WHERE end_time IS NULL AND C.user_id=TA.user_id AND TA.Trip_id=TR.trip_id AND C.user_id=?', [userId]);
-    if (!getCustomerTrip.length) { throw new Error('Unable to get customers trip status'); }
+    const getCustomerTrip = await db.query('SELECT TR.trip_id FROM CUSTOMER AS C, TAKES AS TA, TRIP AS TR WHERE end_time IS NULL AND C.user_id=TA.user_id AND TA.Trip_id=TR.trip_id AND C.user_id=?', [userId]);
+    if (!getCustomerTrip.length) { 
+      res.status(200).json({ success: true, tripId: null }); 
+      return; 
+    }
     res.status(200).json({ success: true, message: 'Trip loaded successfully.', tripId: getCustomerTrip[0].trip_id });
-  } catch(error) {
+  } catch (error) {
     console.log(error);
-    res.status(400).json({ success: false});
+    res.status(400).json({ success: false });
   }
 });
 
@@ -277,26 +283,26 @@ routes.get('/api/getAvailableElectricVehicles', async (req, res) => {
 
 routes.get('/api/getCustomerTrip', async (req, res) => {
   const customerId = req.query.userId;
-   try {
+  try {
     //  probably need to join customer, trip, takes
     //  and do a SEPERATE query where you join customer, trip, takes, and car_trip
     //  in both of the above, make sure that end_time is NULL for trip (use IS NULL not = NULL)
     //  end_time being null means the customer hasn't ended it yet
     //  just return everything i guess lol
-    const customersTrips = await db.query('SELECT * FROM CUSTOMER AS C, TRIP AS TR, TAKES AS TA WHERE C.user_id=TA.user_id AND TR.Trip_id=TA.trip_id AND TR.end_time IS NULL AND C.user_id=?', 
-    [customerId]);
-    if(!customersTrips.length) { throw new Error('Unable to get customers current trip'); }
+    const customersTrips = await db.query('SELECT * FROM CUSTOMER AS C, TRIP AS TR, TAKES AS TA WHERE C.user_id=TA.user_id AND TR.Trip_id=TA.trip_id AND TR.end_time IS NULL AND C.user_id=?',
+      [customerId]);
+    if (!customersTrips.length) { throw new Error('Unable to get customers current trip'); }
     const trip_id = customersTrips[0].trip_id;
     const carTrips = await db.query('SELECT * FROM CAR_TRIP AS CT, TRIP AS T, USER AS U, VEHICLE AS V, CAR AS C, DRIVER AS D WHERE CT.trip_id=? AND CT.trip_id=T.trip_id AND U.user_id=CT.driver_id AND V.vehicle_id=C.vehicle_id AND C.vehicle_id=D.vehicle_id AND D.user_id=U.user_id', [trip_id]);
-    if(!carTrips.length) {
-      res.status(200).json({success: true, trip: {...customersTrips[0], type: 'electricVehicleTrip'}});
+    if (!carTrips.length) {
+      res.status(200).json({ success: true, trip: { ...customersTrips[0], type: 'electricVehicleTrip' } });
     } else {
-      res.status(200).json({success: true, trip: {...carTrips[0], type: 'carTrip'}});
+      res.status(200).json({ success: true, trip: { ...carTrips[0], type: 'carTrip' } });
     }
-   } catch (error) {
-     console.log(error);
-     res.status(400).json({success: false});
-   }
+  } catch (error) {
+    console.log(error);
+    res.status(400).json({ success: false });
+  }
 });
 
 routes.post('/api/rateDriver', async (req, res) => {
@@ -308,14 +314,14 @@ routes.post('/api/rateDriver', async (req, res) => {
     //  easier to test the SQL in phpmyadmin FIRST before using it here
     const driverTrips = await db.query('SELECT COUNT(*) AS count FROM CAR_TRIP WHERE driver_id=? AND driver_ended=true', [driverId]);
     let count = driverTrips.count;
-    if(!driverTrips.length || !count) { count = 0; }
+    if (!driverTrips.length || !count) { count = 0; }
 
     const driversOldRating = await db.query('SELECT driver_rating FROM DRIVER WHERE user_id=?', [driverId]);
-    if(!driversOldRating.length) { throw new Error('Unable to get drivers rating'); }
+    if (!driversOldRating.length) { throw new Error('Unable to get drivers rating'); }
 
     const newRating = helper.calcRating(count, driversOldRating[0].driver_rating, driverRating);
     const driverUpdateRating = await db.query('UPDATE DRIVER SET driver_rating=? WHERE user_id=?', [newRating, driverId]);
-    if(!driverUpdateRating.affectedRows) { throw new Error('Unable to update drivers rating'); }
+    if (!driverUpdateRating.affectedRows) { throw new Error('Unable to update drivers rating'); }
     res.status(200).json({ success: true });
   } catch (error) {
     console.log(error);
@@ -332,14 +338,14 @@ routes.post('/api/rateCustomer', async (req, res) => {
     //  so we can average the rating properly
     //  easier to test the SQL in phpmyadmin FIRST before using it here
     const CustomerTrips = await db.query('SELECT COUNT(*) AS count FROM CAR_TRIP AS CT, TAKES AS T WHERE CT.trip_id=T.Trip_id AND T.user_who_initiated_trip_id=? AND CT.driver_ended=true', [customerId]);
-    if(!CustomerTrips.length) { throw new Error('Unable to get customers trips'); }
+    if (!CustomerTrips.length) { throw new Error('Unable to get customers trips'); }
 
     const CustomersOldRating = await db.query('SELECT customer_rating FROM CUSTOMER WHERE user_id=?', [customerId]);
-    if(!CustomersOldRating.length) { throw new Error('Unable to get customers rating'); }
+    if (!CustomersOldRating.length) { throw new Error('Unable to get customers rating'); }
 
     const newRating = helper.calcRating(CustomerTrips[0].count, CustomersOldRating[0].customer_rating, customerRating);
     const CustomersUpdateRating = await db.query('UPDATE CUSTOMER SET customer_rating=? WHERE user_id=?', [newRating, customerId]);
-    if(!CustomersUpdateRating.affectedRows) { throw new Error('Unable to update customers rating'); }
+    if (!CustomersUpdateRating.affectedRows) { throw new Error('Unable to update customers rating'); }
     res.status(200).json({ success: true });
   } catch (error) {
     console.log(error);
@@ -387,7 +393,7 @@ routes.post('/api/payForTrip', async (req, res) => {
     const newBalance = customerResult[0].balance - fare;
     const payForTripResult = await db.query('UPDATE PAYMENT_ACCOUNT SET BALANCE=? WHERE user_id=?', [newBalance, userId]);
     if (!payForTripResult.affectedRows) throw new Error('Unable to pay from customer for trip ' + tripId);
-    res.status(200).json({success: true});
+    res.status(200).json({ success: true });
   } catch (error) {
     console.log(error);
     res.status(400).json({ success: false });
@@ -400,11 +406,11 @@ routes.post('/api/payDriver', async (req, res) => {
     const driverId = req.body.userId;
 
     const driversBalance = await db.query('SELECT balance FROM PAYMENT_ACCOUNT WHERE user_id=?', [driverId]);
-    if(!driversBalance.length) {throw new Error('Unable to get drivers balance'); }
+    if (!driversBalance.length) { throw new Error('Unable to get drivers balance'); }
 
     const newBalance = driversBalance[0].balance + fare;
     const updateDriverAccount = await db.query('UPDATE PAYMENT_ACCOUNT SET balance=? WHERE user_id=?', [newBalance, driverId]);
-    if(!updateDriverAccount.affectedRows) { throw new Error('Unable to update drivers balance'); }
+    if (!updateDriverAccount.affectedRows) { throw new Error('Unable to update drivers balance'); }
     res.status(200).json({ success: true });
   } catch (error) {
     console.log(error);
@@ -417,7 +423,7 @@ routes.post('/api/setCleanupFee', async (req, res) => {
     const cleanupFee = req.body.cleanupFee;
     const tripId = req.body.tripId;
     const setCleanupFees = await db.query('UPDATE CAR_TRIP SET cleanup_fee=? WHERE trip_id=?', [cleanupFee, tripId]);
-    if(!setCleanupFees.affectedRows) { throw new Error('Unable to update cleaning fee'); }
+    if (!setCleanupFees.affectedRows) { throw new Error('Unable to update cleaning fee'); }
     res.status(200).json({ success: true });
   } catch (error) {
     console.log(error);
@@ -459,11 +465,11 @@ routes.get('/api/calculateEVFare', async (req, res) => {
   const destLat = req.query.destLat;
   const destLng = req.query.destLng;
   if (!startLat || !startLng || !destLat || !destLng) {
-    res.status(400).json({success: false});
+    res.status(400).json({ success: false });
   }
   const distance = helper.calcDistanceKM(startLat, startLng, destLat, destLng);
   const fare = helper.calcFare(distance);
-  res.status(200).json({success: true, fare});
+  res.status(200).json({ success: true, fare });
 });
 
 routes.post('/api/updateEVForTripEnd', async (req, res) => {
@@ -483,10 +489,10 @@ routes.post('/api/updateEVForTripEnd', async (req, res) => {
     const charge = helper.calcChargeAfterReduction(startLat, startLng, destLat, destLng, currentChargeResults[0].battery_percentage);
     const result = await db.query('UPDATE ELECTRIC_VEHICLE SET availability=1, battery_percentage=? WHERE vehicle_id=?', [charge, evId]);
     if (!result.affectedRows) throw new Error('Unable to update charge for EV with id ' + evId);
-    res.status(200).json({success: true});
+    res.status(200).json({ success: true });
   } catch (error) {
     console.log(error);
-    res.status(400).json({success: false})
+    res.status(400).json({ success: false })
   }
 })
 
@@ -502,10 +508,10 @@ routes.post('/api/setEVTripEndLocationAndTime', async (req, res) => {
   try {
     const updateResult = await db.query('UPDATE TRIP SET dest_latitude=?, dest_longitude=?, distance=?, fare=?, end_time=? WHERE trip_id=?', [destLat, destLng, distance, fare, endTime, tripId]);
     if (!updateResult.affectedRows) throw new Error('Unable to end EV trip for tripid ' + tripId);
-    res.status(200).json({success: true});
+    res.status(200).json({ success: true });
   } catch (error) {
     console.log(error);
-    res.status(400).json({success: false});
+    res.status(400).json({ success: false });
   }
 });
 
