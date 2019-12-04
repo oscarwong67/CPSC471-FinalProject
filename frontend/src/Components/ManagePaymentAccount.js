@@ -98,7 +98,7 @@ class ManagePaymentAccount extends React.Component{
       <Button
         content = 'Add Funds'
         size = 'large'
-        onClick = {this.addCreditCard}
+        onClick = {this.addFunds}
       />
     </div>
   )

@@ -347,6 +347,19 @@ routes.post('/api/rateCustomer', async (req, res) => {
   }
 });
 
+routes.post('/api/setDriverEnded', async (req, res) => {
+  try {
+    const trip_id = req.body.tripId;
+    
+    const result = await db.query('UPDATE CAR_TRIP SET driver_ended=true WHERE trip_id=?', [trip_id]);
+    if(!result.affectedRows) { throw new Error('Unable to update trip'); }
+    res.status(200).json({ success: true });
+  } catch (error) {
+    console.log(error);
+    res.status(400).json({ success: false });
+  }
+});
+
 routes.post('/api/getDriverRating', async (req, res) => {
   const userId = req.query.userId;
   try {

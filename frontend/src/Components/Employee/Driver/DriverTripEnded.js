@@ -70,8 +70,11 @@ class DriverTripEnded extends React.Component{
         customerRating: this.state.customerRating
     }).then((response) => {
       if (response.data.success) {
+        this.setState({
+          currentTrip: {}
+        })
         alert('redirecting to dashboard');
-        history.pushState('/')
+        history.push('/');
       } else {
         console.error(response);
       }
