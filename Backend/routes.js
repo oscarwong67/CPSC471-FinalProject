@@ -165,7 +165,7 @@ routes.post('/api/addFunds', async (req, res) => {
   try {
     const getBalance = await db.query('SELECT balance FROM PAYMENT_ACCOUNT WHERE user_id=?', [user_id]);
     if (!getBalance.length) { throw new Error('Unable to select balance from payment account'); }
-    const oldBalance = getBalance.balance;
+    const oldBalance = getBalance[0].balance;
     const balance = helper.calcNewBalance(amountAdded, oldBalance);
 
     const setNewBalance = await db.query('UPDATE PAYMENT_ACCOUNT SET balance=? WHERE user_id=?', [balance, user_id]);
