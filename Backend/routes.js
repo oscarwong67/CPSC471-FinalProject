@@ -325,7 +325,7 @@ routes.post('/api/rateDriver', async (req, res) => {
 routes.post('/api/rateCustomer', async (req, res) => {
   try {
     const customerId = req.body.customerId;
-    const customerRating = req.body.rating;
+    const customerRating = req.body.customerRating;
     //  basically a clone of before but CUSTOMER instead of DRIVER
     //  you'll need to count how many car trips they've done
     //  so we can average the rating properly
