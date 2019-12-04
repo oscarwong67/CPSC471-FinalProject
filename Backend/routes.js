@@ -207,6 +207,7 @@ routes.post('/api/bookCarTrip', async (req, res) => {
   const destLat = req.body.destLatitude;
   const destLng = req.body.destLongitude;
   const distance = helper.calcDistanceKM(startLat, startLng, destLat, destLng);
+  const otherUser = req.body.otherUser;
 
   try {
     const selectAvailableDriver = await db.query('SELECT user_id FROM DRIVER WHERE availability=1');
@@ -233,8 +234,16 @@ routes.post('/api/bookCarTrip', async (req, res) => {
     const createCarTrip = await db.query('INSERT INTO CAR_TRIP SET ?', { trip_id: tripId, driver_id: driverId });
     if (!createCarTrip.affectedRows) { throw new Error('Unable to create car trip'); }
     //  create a "takes" entity
-    const createTakes = await db.query('INSERT INTO TAKES SET ?', { Trip_id: tripId, user_id: userId, user_who_initiated_trip_id: userId });
-    if (!createTakes.affectedRows) { throw new Error('Unable to create takes'); }
+    if(otherUser) {
+      const checkOtherUser = await db.query('SELECT user_id FROM CUSTOMER WHERE user_id=?', [otherUser]);
+      if(!checkOtherUser.length) {throw new Error('Unable to get other user'); }
+
+      const createTakes = await db.query('INSERT INTO TAKES SET ?', { Trip_id: tripId, user_id: otherUser, user_who_initiated_trip_id: userId });
+      if (!createTakes.affectedRows) { throw new Error('Unable to create takes with other user'); }
+    } else {
+      const createTakes = await db.query('INSERT INTO TAKES SET ?', { Trip_id: tripId, user_id: userId, user_who_initiated_trip_id: userId });
+      if (!createTakes.affectedRows) { throw new Error('Unable to create takes'); }
+    }
     res.status(200).json({ success: true });
   } catch (error) {
     console.log(error);
