@@ -174,6 +174,20 @@ routes.post('/api/addFunds', async (req, res) => {
   }
 });
 
+routes.post('/api/addCreditCard', async (req, res) => {
+  const user_id = req.body.userId;
+  const credit_card = req.body.creditCard;
+
+  try {
+    const result = await db.query('INSERT INTO CREDIT_CARD SET ?', { user_id: user_id, credit_card: credit_card });
+    if (!result.affectedRows) { throw new Error('Unable add credit card'); }
+    res.status(200).json({ success: true });
+  } catch(error) {
+    console.log(error);
+    res.status(400).json({ success: false});
+  }
+});
+
 routes.post('/api/withdrawFunds', async (req, res) => {
   const user_id = req.body.userId;
   try {
