@@ -1,5 +1,5 @@
 import React from 'react';
-import { Input, Button, Form, Group, Icon, Grid } from 'semantic-ui-react'
+import { Button, Form, Grid } from 'semantic-ui-react'
 import Dashboard from '../../Dashboard'
 import history from '../../../history';
 const axios = require('axios');

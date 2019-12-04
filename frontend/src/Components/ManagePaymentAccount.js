@@ -11,7 +11,6 @@ class ManagePaymentAccount extends React.Component{
       amount: '',
       balance: 0,
       creditCard: '',
-      // hasCreditCard: null
     }
   }
   componentDidMount() {
@@ -45,6 +44,12 @@ class ManagePaymentAccount extends React.Component{
   render = () => (
     <div>
       <Dashboard/>
+      <Button
+        content = 'Back to Dashboard'
+        icon = 'arrow left'
+        onClick = {this.backToDashboard}
+      />
+      <h4></h4>
       <Grid columns={5}>
         <Grid.Column></Grid.Column>
         <Grid.Column></Grid.Column>
@@ -60,19 +65,18 @@ class ManagePaymentAccount extends React.Component{
         <Grid.Column></Grid.Column>
         <Grid.Column></Grid.Column>
       </Grid>
-      
+
       {
         (localStorage.getItem('accountType') === 'Customer')  ?
         this.renderAddFunds()
         : this.renderWithdrawFunds()
       }
-
+      <h4></h4>
     </div>
   )
   renderAddFunds = () => (
     <div>
       <Divider horizontal>Add Funds</Divider>
-      
       {
         (this.state.creditCard !== '') ?
         this.renderHasCreditCard()
@@ -158,6 +162,9 @@ class ManagePaymentAccount extends React.Component{
         alert('failed to withdraw account balance. Please try again later.');
       }
     })
+  }
+  backToDashboard = () => {
+    history.push('/')
   }
 }
 

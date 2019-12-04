@@ -1,11 +1,9 @@
 import React from 'react';
-import { Button, Icon } from 'semantic-ui-react'
+import { Button } from 'semantic-ui-react'
 import '../Styles/Dashboard.css'
 import history from '../history';
 
 class Dashboard extends React.Component{
-
-
   render = () => (
     <div className='dashboard'>
       <h2>You are now ready for a Ryde.</h2>

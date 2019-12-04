@@ -10,6 +10,7 @@ function signOut() {
 const SignoutButton = () => (
     <Button 
         size='large' 
+        icon = 'sign-out'
         onClick={signOut}
         content = 'Sign Out!'
     />
