@@ -331,8 +331,8 @@ routes.post('/api/rateDriver', async (req, res) => {
 
 routes.post('/api/rateCustomer', async (req, res) => {
   try {
-    const customerId = req.body.userId;
-    const customerRating = req.body.rating;
+    const customerId = req.body.customerId;
+    const customerRating = req.body.customerRating;
     //  basically a clone of before but CUSTOMER instead of DRIVER
     //  you'll need to count how many car trips they've done
     //  so we can average the rating properly
@@ -343,10 +343,35 @@ routes.post('/api/rateCustomer', async (req, res) => {
     const CustomersOldRating = await db.query('SELECT customer_rating FROM CUSTOMER WHERE user_id=?', [customerId]);
     if (!CustomersOldRating.length) { throw new Error('Unable to get customers rating'); }
 
-    const newRating = helper.calcRating(CustomerTrips[0].count, CustomersOldRating[0].driver_rating, customerRating);
+    const newRating = helper.calcRating(CustomerTrips[0].count, CustomersOldRating[0].customer_rating, customerRating);
     const CustomersUpdateRating = await db.query('UPDATE CUSTOMER SET customer_rating=? WHERE user_id=?', [newRating, customerId]);
     if (!CustomersUpdateRating.affectedRows) { throw new Error('Unable to update customers rating'); }
     res.status(200).json({ success: true });
+  } catch (error) {
+    console.log(error);
+    res.status(400).json({ success: false });
+  }
+});
+
+routes.post('/api/setDriverEnded', async (req, res) => {
+  try {
+    const trip_id = req.body.tripId;
+    
+    const result = await db.query('UPDATE CAR_TRIP SET driver_ended=true WHERE trip_id=?', [trip_id]);
+    if(!result.affectedRows) { throw new Error('Unable to update trip'); }
+    res.status(200).json({ success: true });
+  } catch (error) {
+    console.log(error);
+    res.status(400).json({ success: false });
+  }
+});
+
+routes.post('/api/getDriverRating', async (req, res) => {
+  const userId = req.query.userId;
+  try {
+    const rating = await db.query('SELECT driver_rating FROM DRIVER WHERE user_id=?', [userId]);
+    if(!rating.length) { throw new Error('Unable to get driver\'s rating'); }
+    res.status(400).json({ success: true, rating });
   } catch (error) {
     console.log(error);
     res.status(400).json({ success: false });

@@ -80,7 +80,7 @@ class ManagePaymentAccount extends React.Component{
     <div>
       <Divider horizontal>Add Funds</Divider>
       {
-        (this.state.hasCreditCard) ?
+        (this.state.hasCreditCards) ?
         this.renderHasCreditCard()
         : this.renderAddCreditCard()
       }
@@ -98,7 +98,7 @@ class ManagePaymentAccount extends React.Component{
       <Button
         content = 'Add Funds'
         size = 'large'
-        onClick = {this.addCreditCard}
+        onClick = {this.addFunds}
       />
     </div>
   )

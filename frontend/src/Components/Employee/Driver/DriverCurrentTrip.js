@@ -14,7 +14,6 @@ class DriverCurrentTrip extends React.Component{
     super(props);
     this.state = {
       currentTrip: {},
-      customer: {},
       viewport: {
         width: defaultWidth,
         height: defaultHeight,
@@ -38,7 +37,7 @@ class DriverCurrentTrip extends React.Component{
       console.log(response.data);
       if (response.data.success) {
         this.setState({
-          currentTrip: response.ata.trip
+          currentTrip: response.data.trip
         })
       } else {
         console.error(response);
@@ -46,20 +45,6 @@ class DriverCurrentTrip extends React.Component{
     }).catch((error) => {
       console.error(error);
     });
-    axios.get('http://localhost:5000/api/getCustomerInfo', {
-      params: {
-        // TODO figure out what this needs
-      }
-    }).then((response) => {
-      console.log(response.data);
-      if (response.data.success) {
-        this.setState({
-          customer: response.data.customer // TODO fix this 
-        })
-      } else {
-        console.error(response);
-      }
-    })
   }
   updatePosition = (position) => {
     const viewport = this.state.viewport;
@@ -88,6 +73,7 @@ class DriverCurrentTrip extends React.Component{
       const currentDate = moment().format("dddd, MMMM, Do YYYY");
       return (
         <div>
+          <p>Currently driving {this.state.currentTrip.fname} {this.state.currentTrip.lname}</p>
           <p>Start Date: {startDate}</p>
           <p>Start Time: {startTime}</p>
           <p>Current Date: {currentDate}</p>
@@ -98,7 +84,7 @@ class DriverCurrentTrip extends React.Component{
   }
   renderCarTripMarkers = () => {
     return (
-      this.state.currentTrip.type === "carTrip" &&
+      this.state.currentTrip &&
       (<div>
         <Marker className="location-marker"
           latitude={this.state.currentTrip.dest_latitude}
@@ -135,7 +121,7 @@ class DriverCurrentTrip extends React.Component{
           {this.renderCarTripMarkers()}
         </ReactMapGL>
       </Grid>
-      <Divider horizontal>Current Ryde Info</Divider>
+      <Divider horizontal>Ryde Info</Divider>
       <Container>
         {this.renderTripInfo()}
       </Container>
