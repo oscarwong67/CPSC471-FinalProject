@@ -42,7 +42,7 @@ class DriverTripEnded extends React.Component{
     }).then((response) => {
       if (response.data.success) {
         alert('redirecting to dashboard');
-        history.pushState('/')
+        // history.pushState('/')
       } else {
         console.error(response);
       }
