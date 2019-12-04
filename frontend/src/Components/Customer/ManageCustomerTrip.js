@@ -1,5 +1,5 @@
 import React from 'react';
-import { Grid, Header, Label, Icon, Button, Container, List, Modal, Rating } from 'semantic-ui-react';
+import { Grid, Header, Label, Icon, Button, Container, List, Modal, Rating, Divider } from 'semantic-ui-react';
 import ReactMapGL, { Marker } from "react-map-gl";
 import history from '../../history';
 import '../../Styles/MapStyle.css';
@@ -263,7 +263,7 @@ class ManageCustomerTrip extends React.Component {
         {this.renderCarTripMarkers()}
       </ReactMapGL>
       <Container>
-        <Header as="h3">Current Ride Info: </Header>
+        <Divider horizontal>Current Ride Info</Divider>
         {this.renderTripInfo()}
       </Container>
       <Modal trigger={<Button content="End Ryde" />}>

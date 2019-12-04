@@ -348,11 +348,14 @@ routes.post('/api/rateCustomer', async (req, res) => {
 });
 
 routes.post('/api/setDriverEnded', async (req, res) => {
+  const driver_id = req.body.driver_id;
   try {
-    const trip_id = req.body.tripId;
-    
-    const result = await db.query('UPDATE CAR_TRIP SET driver_ended=true WHERE trip_id=?', [trip_id]);
+    const result = await db.query('UPDATE CAR_TRIP SET driver_ended=true WHERE driver_id=?', [driver_id]);
     if(!result.affectedRows) { throw new Error('Unable to update trip'); }
+
+    const driverAvailability = await db.query('UPDATE DRIVER SET availability=true WHERE user_id=?', [driver_id]);
+    if(!driverAvailability.affectedRows) {throw new Error('Unable to update driver');}
+
     res.status(200).json({ success: true });
   } catch (error) {
     console.log(error);
@@ -361,11 +364,13 @@ routes.post('/api/setDriverEnded', async (req, res) => {
 });
 
 routes.post('/api/getDriverRating', async (req, res) => {
-  const userId = req.query.userId;
+  const userId = req.body.userId;
   try {
     const rating = await db.query('SELECT driver_rating FROM DRIVER WHERE user_id=?', [userId]);
+    console.log(rating[0]);
     if(!rating.length) { throw new Error('Unable to get driver\'s rating'); }
-    res.status(400).json({ success: true, rating });
+    
+    res.status(200).json({ success: true, rating: rating[0] });
   } catch (error) {
     console.log(error);
     res.status(400).json({ success: false });

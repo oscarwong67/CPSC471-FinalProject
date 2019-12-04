@@ -2,6 +2,7 @@ import React from 'react';
 import { Grid, Header, Label, Icon, Button, Container, Divider } from 'semantic-ui-react';
 import ReactMapGL, { Marker } from "react-map-gl";
 import '../../../Styles/MapStyle.css';
+import '../../../history';
 const axios = require('axios');
 const moment = require('moment');
 
@@ -73,18 +74,19 @@ class DriverCurrentTrip extends React.Component{
       const currentDate = moment().format("dddd, MMMM, Do YYYY");
       return (
         <div>
-          <p>Currently driving {this.state.currentTrip.fname} {this.state.currentTrip.lname}</p>
-          <p>Start Date: {startDate}</p>
-          <p>Start Time: {startTime}</p>
-          <p>Current Date: {currentDate}</p>
-          <p>Current Time: {currentTime}</p>
+          <p><strong>Currently driving {this.state.currentTrip.fname} {this.state.currentTrip.lname}</strong></p>
+          <p><strong>Customer Phone #:</strong> {this.state.currentTrip.phone_no}</p>
+          <p><strong>Start Date:</strong> {startDate}</p>
+          <p><strong>Start Time:</strong> {startTime}</p>
+          <p><strong>Current Date:</strong> {currentDate}</p>
+          <p><strong>Current Time:</strong> {currentTime}</p>
         </div>
       );
     }
   }
   renderCarTripMarkers = () => {
     return (
-      this.state.currentTrip &&
+      this.state.currentTrip.dest_latitude &&
       (<div>
         <Marker className="location-marker"
           latitude={this.state.currentTrip.dest_latitude}
@@ -109,6 +111,7 @@ class DriverCurrentTrip extends React.Component{
   }
   render = () => (
     <div>
+      
       <Grid padded="vertically" relaxed stretched centered container verticalAlign="middle">
         <Header as="h2">Current Ryde</Header>
         <ReactMapGL

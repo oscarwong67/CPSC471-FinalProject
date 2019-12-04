@@ -70,10 +70,18 @@ class DriverTripEnded extends React.Component{
         customerRating: this.state.customerRating
     }).then((response) => {
       if (response.data.success) {
-        this.setState({
-          currentTrip: {}
-        })
-        alert('redirecting to dashboard');
+        axios.post('http://localhost:5000/api/setDriverEnded', {
+          driver_id: localStorage.getItem('accountId')
+        }).then((response) => {
+          if (response.data.success) {
+            this.setState({
+              currentTrip: {}
+            })
+          }
+        }).catch((error) => {
+          console.error(error);
+        });
+        alert('Trip has ended! Redirecting to dashboard');
         history.push('/');
       } else {
         console.error(response);

@@ -11,6 +11,7 @@ import RentEV from './Components/Customer/RentEV';
 import SignoutButton from './Components/SignoutButton';
 import ManagePaymentAccount from './Components/ManagePaymentAccount';
 import history from './history';
+import ViewDriverTrip from './Components/Employee/Driver/ViewDriverTrip';
 
 function App() {
 
@@ -28,6 +29,7 @@ function App() {
         </Route>
         <PrivateRoute path="/bookCarTrip" component={BookCarTrip} />
         <PrivateRoute path="/manageCustomerTrip" component={ManageCustomerTrip} />
+        <PrivateRoute path="/viewDriverTrip" component={ViewDriverTrip} />
         <PrivateRoute path="/rentVehicle" component={RentEV} />
         <PrivateRoute path="/managePaymentAccount" component={ManagePaymentAccount} />
         <PrivateRoute path="/" component={SignoutButton} />
