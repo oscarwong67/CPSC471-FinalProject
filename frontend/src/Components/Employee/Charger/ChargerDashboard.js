@@ -14,6 +14,7 @@ class ChargerDashboard extends React.Component{
   render = () => (
     <div>
       <Dashboard/>
+      <h2>CHARGE ELECTRIC VEHICLE</h2>
       <Grid columns = {3}>
         <Grid.Column></Grid.Column>
           <Grid.Column>
