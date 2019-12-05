@@ -214,8 +214,20 @@ routes.post('/api/bookCarTrip', async (req, res) => {
 
   try {
     const selectAvailableDriver = await db.query('SELECT user_id FROM DRIVER WHERE availability=1');
-    if (!selectAvailableDriver.length) { throw new Error('Unable to find find available vehicle'); }
+    if (!selectAvailableDriver.length) { throw new Error('Unable to find find available driver'); }
     const driverId = selectAvailableDriver[0].user_id;
+
+    let otherUserId = null;
+    //  check if there's another user splitting the fare
+    if (otherUser !== "") {
+      const checkOtherUser = await db.query('SELECT user_id FROM USER WHERE accountType="Customer" AND email=?', [otherUser]);
+      if (!checkOtherUser.length) { 
+        res.status(200).json({success: false, message: `Unable to find other user with email ${otherUser}`});
+        return;
+       }
+      otherUserId = checkOtherUser[0].user_id;
+    }
+
     //  create a new trip
     const createTrip = await db.query('INSERT INTO TRIP SET ?', {
       pickup_latitude: startLat,
@@ -236,21 +248,17 @@ routes.post('/api/bookCarTrip', async (req, res) => {
     //  create a new car trip
     const createCarTrip = await db.query('INSERT INTO CAR_TRIP SET ?', { trip_id: tripId, driver_id: driverId });
     if (!createCarTrip.affectedRows) { throw new Error('Unable to create car trip'); }
-    //  create a "takes" entity
-    if (otherUser) {
-      const checkOtherUser = await db.query('SELECT user_id FROM CUSTOMER WHERE user_id=?', [otherUser]);
-      if (!checkOtherUser.length) { throw new Error('Unable to get other user'); }
-
-      const createTakes = await db.query('INSERT INTO TAKES SET ?', { Trip_id: tripId, user_id: otherUser, user_who_initiated_trip_id: userId });
+    //  create a "takes" entity (or two)
+    if (otherUserId) {
+      const createTakes = await db.query('INSERT INTO TAKES SET ?', { Trip_id: tripId, user_id: otherUserId, user_who_initiated_trip_id: userId });
       if (!createTakes.affectedRows) { throw new Error('Unable to create takes with other user'); }
-    } else {
-      const createTakes = await db.query('INSERT INTO TAKES SET ?', { Trip_id: tripId, user_id: userId, user_who_initiated_trip_id: userId });
-      if (!createTakes.affectedRows) { throw new Error('Unable to create takes'); }
     }
+    const createTakes = await db.query('INSERT INTO TAKES SET ?', { Trip_id: tripId, user_id: userId, user_who_initiated_trip_id: userId });
+    if (!createTakes.affectedRows) { throw new Error('Unable to create takes'); }
     res.status(200).json({ success: true });
   } catch (error) {
     console.log(error);
-    res.status(400).json({ success: false });
+    res.status(400).json({ success: false, message: error });
   }
 });
 
@@ -369,13 +377,13 @@ routes.post('/api/setDriverEnded', async (req, res) => {
   }
 });
 
-routes.post('/api/getDriverRating', async (req, res) => {
-  const user_id = req.body.user_id;
+routes.get('/api/getDriverRating', async (req, res) => {
+  const userId = req.query.userId;
   try {
     const rating = await db.query('SELECT driver_rating FROM DRIVER WHERE user_id=?', [user_id]);
     if(!rating.length) { throw new Error('Unable to get driver\'s rating'); }
     
-    res.status(200).json({ success: true, rating: rating[0] });
+    res.status(200).json({ success: true, rating: rating[0].driver_rating });
   } catch (error) {
     console.log(error);
     res.status(400).json({ success: false });
@@ -388,10 +396,13 @@ routes.post('/api/payForTrip', async (req, res) => {
     const tripId = req.body.tripId;
     const customerResult = await db.query('SELECT U.user_id, balance FROM USER AS U, TAKES AS T, PAYMENT_ACCOUNT AS P WHERE U.user_id=T.user_id AND P.user_id=U.user_id AND T.Trip_id=?', [tripId]);
     if (!customerResult.length) throw new Error('Unable to get customer payment account while paying for trip with id ' + tripId);
-    const userId = customerResult[0].user_id;
-    const newBalance = customerResult[0].balance - fare;
-    const payForTripResult = await db.query('UPDATE PAYMENT_ACCOUNT SET BALANCE=? WHERE user_id=?', [newBalance, userId]);
-    if (!payForTripResult.affectedRows) throw new Error('Unable to pay from customer for trip ' + tripId);
+    const numUsersOnTrip = customerResult.length;
+    for (let i = 0; i < customerResult.length; i++) {
+      const userId = customerResult[i].user_id;
+      const newBalance = customerResult[i].balance - (fare / numUsersOnTrip);
+      const payForTripResult = await db.query('UPDATE PAYMENT_ACCOUNT SET BALANCE=? WHERE user_id=?', [newBalance, userId]);
+      if (!payForTripResult.affectedRows) throw new Error('Unable to pay from customer for trip ' + tripId);
+    }
     res.status(200).json({ success: true });
   } catch (error) {
     console.log(error);

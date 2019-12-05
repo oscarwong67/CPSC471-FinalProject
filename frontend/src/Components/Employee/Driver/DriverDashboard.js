@@ -29,9 +29,11 @@ class DriverDashboard extends React.Component{
     axios.post('http://localhost:5000/api/getDriverRating',{
       user_id: localStorage.getItem('accountId')
     }).then((response) => {
-      if(response.data.success) {
+      if (response.data.success) {
+        console.log(response.data);
         this.setState({
-          driverRating: response.data.rating
+          rating: response.data.rating
+          
         });
       }
     }).catch((error) => {
@@ -52,6 +54,8 @@ class DriverDashboard extends React.Component{
           : 
           <div>
             <h1>Waiting for Ryde</h1>
+            <Divider horizontal>Your Rating</Divider>
+            <Rating disabled icon='star' rating={this.state.rating} maxRating={5} />
           </div>  
       }
 
