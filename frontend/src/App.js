@@ -11,15 +11,18 @@ import RentEV from './Components/Customer/RentEV';
 import SignoutButton from './Components/SignoutButton';
 import ManagePaymentAccount from './Components/ManagePaymentAccount';
 import history from './history';
-import ViewDriverTrip from './Components/Employee/Driver/ViewDriverTrip';
+import DriverCurrentTrip from './Components/Employee/Driver/DriverCurrentTrip';
+import DriverTripEnded from './Components/Employee/Driver/DriverTripEnded';
 
 function App() {
 
   return (
     <div className="App">
+      <h1>   </h1>
       <Header as='h1' color='pink' className="App-header">
-        Welcome to Ryde
+        WELCOME TO RYDE!
       </Header>
+      <h3>   </h3>
       <Router history={history}>
         <Route>
           <Switch>
@@ -29,8 +32,9 @@ function App() {
         </Route>
         <PrivateRoute path="/bookCarTrip" component={BookCarTrip} />
         <PrivateRoute path="/manageCustomerTrip" component={ManageCustomerTrip} />
-        <PrivateRoute path="/viewDriverTrip" component={ViewDriverTrip} />
         <PrivateRoute path="/rentVehicle" component={RentEV} />
+        <PrivateRoute path="/currentDriverTrip" component={DriverCurrentTrip} />
+        <PrivateRoute path="/endDriverTrip" component={DriverTripEnded} />
         <PrivateRoute path="/managePaymentAccount" component={ManagePaymentAccount} />
         <PrivateRoute path="/" component={SignoutButton} />
       </Router>

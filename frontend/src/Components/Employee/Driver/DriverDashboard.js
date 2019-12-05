@@ -8,7 +8,8 @@ class DriverDashboard extends React.Component{
   constructor(props){
     super(props);
     this.state = {
-      currentTrip: null,
+      currentTrip: {},
+      tripStatus: null,
       driverRating: 0
     }
   }
@@ -26,7 +27,19 @@ class DriverDashboard extends React.Component{
     }).catch((error) => {
       console.log(error);
     });
-
+    axios.get('http://localhost:5000/api/getDriverTripStatus', {
+      params: {
+        userId: localStorage.getItem('accountId')
+      }
+    }).then((response) => {
+      if (response.data.success) {
+        this.setState({
+          tripStatus: response.data.status
+        })
+      }
+    }).catch((error) => {
+      console.log(error);
+    });
     axios.get('http://localhost:5000/api/getDriverRating', {
       params: {
         userId: localStorage.getItem('accountId')
@@ -45,27 +58,32 @@ class DriverDashboard extends React.Component{
     <div>
       <Dashboard />
       {
-        this.state.currentTrip ?
+        (this.state.currentTrip.trip_id) ?
           <Button 
             onClick={this.viewCurrentTrip}
             content='View Current Ryde'
             icon='car'
-          />            
-          : 
-          null
+          />          
+          : <div>
+              <h2>WAITING</h2>
+              <h3>You are not currently in a ryde!</h3>
+            </div>
       }
-
+      <h6>  </h6>
       <Divider horizontal>Your Rating</Divider>
       <Rating 
         icon='star' 
         rating = {this.state.driverRating}
         maxRating={5} 
-        disabled />
+        disabled 
+      />
+      <h6>   </h6>
     </div>
   )
   viewCurrentTrip = () => {
-    this.setState({currentTrip: null})
-    history.push('/viewDriverTrip');
+    (this.state.tripStatus === 'ACTIVE') ?
+      history.push('/currentDriverTrip') 
+      : history.push('/endDriverTrip')
   }
 }
 

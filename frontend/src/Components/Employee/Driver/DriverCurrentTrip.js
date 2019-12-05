@@ -1,8 +1,8 @@
 import React from 'react';
-import { Grid, Header, Label, Icon, Button, Container, Divider } from 'semantic-ui-react';
+import { Grid, Header, Label, Icon, Button, Container, Divider, List } from 'semantic-ui-react';
 import ReactMapGL, { Marker } from "react-map-gl";
 import '../../../Styles/MapStyle.css';
-import '../../../history';
+import history from '../../../history';
 const axios = require('axios');
 const moment = require('moment');
 
@@ -74,12 +74,13 @@ class DriverCurrentTrip extends React.Component{
       const currentDate = moment().format("dddd, MMMM, Do YYYY");
       return (
         <div>
-          <p><strong>Currently driving {this.state.currentTrip.fname} {this.state.currentTrip.lname}</strong></p>
-          <p><strong>Customer Phone #:</strong> {this.state.currentTrip.phone_no}</p>
-          <p><strong>Start Date:</strong> {startDate}</p>
-          <p><strong>Start Time:</strong> {startTime}</p>
-          <p><strong>Current Date:</strong> {currentDate}</p>
-          <p><strong>Current Time:</strong> {currentTime}</p>
+          <List>
+            <List.Item><strong>Currently driving {this.state.currentTrip.fname} {this.state.currentTrip.lname}</strong></List.Item>
+            <List.Item><strong>Customer Phone #:</strong> {this.state.currentTrip.phone_no}</List.Item>
+            <List.Item> </List.Item>
+            <List.Item><strong>Start Date & Time:</strong> {startDate} {startTime}</List.Item>
+            <List.Item><strong>Current Date & Time:</strong> {currentDate} {currentTime}</List.Item>
+          </List>
         </div>
       );
     }
@@ -109,11 +110,19 @@ class DriverCurrentTrip extends React.Component{
       </div>)
     );
   }
+  backToDashboard = () => {
+    history.push('/')
+  }
   render = () => (
     <div>
-      
+      <Button
+        content = 'Back to Dashboard'
+        icon = 'arrow left'
+        onClick = {this.backToDashboard}
+      />
       <Grid padded="vertically" relaxed stretched centered container verticalAlign="middle">
-        <Header as="h2">Current Ryde</Header>
+        <p>   </p>
+        <Header as="h2">CURRENT RYDE</Header>
         <ReactMapGL
           {...this.state.viewport}
           mapboxApiAccessToken="pk.eyJ1Ijoib3NjYXJ3b25nNjciLCJhIjoiY2l2b211cW1mMDFoZjJ5cDUyZ24zNHluYiJ9.gMJv27QqmwIhA8eacn5Qtg"
@@ -121,13 +130,14 @@ class DriverCurrentTrip extends React.Component{
           children={this.props.children}
           onViewportChange={this.handleViewportChange}
         >
-          {this.renderCarTripMarkers()}
+        {this.renderCarTripMarkers()}
         </ReactMapGL>
       </Grid>
       <Divider horizontal>Ryde Info</Divider>
       <Container>
         {this.renderTripInfo()}
       </Container>
+      <h6>   </h6>
     </div>
   );
 }

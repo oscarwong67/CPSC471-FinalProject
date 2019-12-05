@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactMapGL, { Marker, Popup } from "react-map-gl";
-import { Grid, Icon, Label, Button } from 'semantic-ui-react';
+import { Grid, Icon, Label, Button, Header } from 'semantic-ui-react';
 import '../../Styles/MapStyle.css'
 import history from '../../history';
 const axios = require('axios');
@@ -151,22 +151,36 @@ class RentEV extends React.Component {
       viewport
     })
   }
+  backToDashboard = () => {
+    history.push('/')
+  }
   render = () => (
-    <Grid padded="vertically" relaxed stretched centered container verticalAlign="middle">
-      <ReactMapGL
-        {...this.state.viewport}
-        onViewportChange={this.handleViewportChange}
-        mapboxApiAccessToken="pk.eyJ1Ijoib3NjYXJ3b25nNjciLCJhIjoiY2l2b211cW1mMDFoZjJ5cDUyZ24zNHluYiJ9.gMJv27QqmwIhA8eacn5Qtg"
-        mapStyle="mapbox://styles/mapbox/streets-v10"
-        children={this.props.children}
-      >
-        {this.renderMarkers()}
-        {this.renderPopup()}
-      </ReactMapGL>
-      <Button onClick={this.submitRentEVRequest}>
-        Book your Ryde!
-      </Button>
-    </Grid>
+    <div>
+      <Button
+        content = 'Back to Dashboard'
+        icon = 'arrow left'
+        onClick = {this.backToDashboard}
+      />
+      <h6>   </h6>
+      <Header as = 'h2'>ELECTRIC VEHICLE RYDE</Header>
+      <Grid padded="vertically" relaxed stretched centered container verticalAlign="middle">
+        <ReactMapGL
+          {...this.state.viewport}
+          onViewportChange={this.handleViewportChange}
+          mapboxApiAccessToken="pk.eyJ1Ijoib3NjYXJ3b25nNjciLCJhIjoiY2l2b211cW1mMDFoZjJ5cDUyZ24zNHluYiJ9.gMJv27QqmwIhA8eacn5Qtg"
+          mapStyle="mapbox://styles/mapbox/streets-v10"
+          children={this.props.children}
+        >
+          {this.renderMarkers()}
+          {this.renderPopup()}
+        </ReactMapGL>
+      </Grid>
+      <h6>   </h6>
+      <Button 
+        onClick={this.submitRentEVRequest}
+        content = 'Book your Ryde!'
+      />
+    </div>
   );
 }
 

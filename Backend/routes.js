@@ -390,6 +390,19 @@ routes.get('/api/getDriverRating', async (req, res) => {
   }
 });
 
+routes.get('/api/getCustomerRating', async (req, res) => {
+  const userId = req.query.userId;
+  try {
+    const rating = await db.query('SELECT customer_rating FROM CUSTOMER WHERE user_id=?', [userId]);
+    if(!rating.length) { throw new Error('Unable to get customer\'s rating'); }
+    
+    res.status(200).json({ success: true, rating: rating[0].customer_rating });
+  } catch (error) {
+    console.log(error);
+    res.status(400).json({ success: false });
+  }
+});
+
 routes.post('/api/payForTrip', async (req, res) => {
   try {
     const fare = req.body.fare;

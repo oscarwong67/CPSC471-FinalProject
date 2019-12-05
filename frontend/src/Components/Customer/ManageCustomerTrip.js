@@ -249,36 +249,48 @@ class ManageCustomerTrip extends React.Component {
       </div>)
     );
   }
+  backToDashboard = () => {
+    history.push('/')
+  }
   render = () => (
-    <Grid padded="vertically" relaxed stretched centered container verticalAlign="middle">
-      <Header as="h2">Your Current Ryde</Header>
-      <ReactMapGL
-        {...this.state.viewport}
-        mapboxApiAccessToken="pk.eyJ1Ijoib3NjYXJ3b25nNjciLCJhIjoiY2l2b211cW1mMDFoZjJ5cDUyZ24zNHluYiJ9.gMJv27QqmwIhA8eacn5Qtg"
-        mapStyle="mapbox://styles/mapbox/streets-v10"
-        children={this.props.children}
-        onViewportChange={this.handleViewportChange}
-      >
-        {this.renderEVMarkers()}
-        {this.renderCarTripMarkers()}
-      </ReactMapGL>
-      <Container>
-        <Divider horizontal>Current Ride Info</Divider>
-        {this.renderTripInfo()}
-      </Container>
-      <Modal trigger={<Button content="End Ryde" />}>
-        <Modal.Header>Thanks for Ryding with Us!</Modal.Header>
-        <Modal.Content>
-          {this.state.currentTrip.type === "carTrip"
-            ? <div>
-              <Header as="h3">Please Rate Your Driver: </Header><Rating icon='star' maxRating={5} onRate={this.handleRate} />
-            </div>
-            : null}
-          <Header as="h3">Your fare is: ${this.calcFare()}</Header>
-          <Button content="Pay and End Ryde" primary onClick={this.endCustomerTrip} />
-        </Modal.Content>
-      </Modal>
-    </Grid>
+    <div>
+      <Button
+        content = 'Back to Dashboard'
+        icon = 'arrow left'
+        onClick = {this.backToDashboard}
+      />
+      <h6>   </h6>
+      <Grid padded="vertically" relaxed stretched centered container verticalAlign="middle">
+        <Header as="h2">CURRENT RYDE</Header>
+        <ReactMapGL
+          {...this.state.viewport}
+          mapboxApiAccessToken="pk.eyJ1Ijoib3NjYXJ3b25nNjciLCJhIjoiY2l2b211cW1mMDFoZjJ5cDUyZ24zNHluYiJ9.gMJv27QqmwIhA8eacn5Qtg"
+          mapStyle="mapbox://styles/mapbox/streets-v10"
+          children={this.props.children}
+          onViewportChange={this.handleViewportChange}
+        >
+          {this.renderEVMarkers()}
+          {this.renderCarTripMarkers()}
+        </ReactMapGL>
+        <Container>
+          <Divider horizontal>Current Ride Info</Divider>
+          {this.renderTripInfo()}
+        </Container>
+        
+        <Modal trigger={<Button content="End Ryde" />}>
+          <Modal.Header>Thanks for Ryding with Us!</Modal.Header>
+          <Modal.Content>
+            {this.state.currentTrip.type === "carTrip"
+              ? <div>
+                <Header as="h3">Please Rate Your Driver: </Header><Rating icon='star' maxRating={5} onRate={this.handleRate} />
+              </div>
+              : null}
+            <Header as="h3">Your fare is: ${this.calcFare()}</Header>
+            <Button content="Pay and End Ryde" primary onClick={this.endCustomerTrip} />
+          </Modal.Content>
+        </Modal>
+      </Grid>
+    </div>
   );
 }
 

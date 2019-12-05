@@ -1,5 +1,5 @@
 import React from 'react';
-import { Divider, Label, Button, Container, Input, Segment, Grid } from 'semantic-ui-react'
+import { Divider, Label, Button, Container, Input, Segment, Grid, Header } from 'semantic-ui-react'
 import history from '../history';
 import Dashboard from './Dashboard';
 const axios = require('axios');
@@ -51,7 +51,8 @@ class ManagePaymentAccount extends React.Component{
         icon = 'arrow left'
         onClick = {this.backToDashboard}
       />
-      <h4></h4>
+      <h4>   </h4>
+      <Header as = 'h2'>PAYMENT ACCOUNT</Header>
       <Grid columns={5}>
         <Grid.Column></Grid.Column>
         <Grid.Column></Grid.Column>
@@ -67,13 +68,14 @@ class ManagePaymentAccount extends React.Component{
         <Grid.Column></Grid.Column>
         <Grid.Column></Grid.Column>
       </Grid>
+      <h4>   </h4>
 
       {
         (localStorage.getItem('accountType') === 'Customer')  ?
         this.renderAddFunds()
         : this.renderWithdrawFunds()
       }
-      <h4></h4>
+      <h4>   </h4>
     </div>
   )
   renderAddFunds = () => (

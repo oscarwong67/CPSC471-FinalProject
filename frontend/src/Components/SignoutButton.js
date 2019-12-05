@@ -8,12 +8,15 @@ function signOut() {
 }
 
 const SignoutButton = () => (
+  <div>
+    <h6>  </h6>
     <Button 
         size='large' 
         icon = 'sign-out'
         onClick={signOut}
         content = 'Sign Out!'
     />
+  </div>
 
 )
 

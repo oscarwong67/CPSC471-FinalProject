@@ -1,8 +1,7 @@
 import React from 'react';
-import { Button, Rating } from 'semantic-ui-react';
+import { Button, Rating, Header } from 'semantic-ui-react';
 import history from '../../../history'
 const axios = require('axios');
-const moment = require('moment');
 
 class DriverTripEnded extends React.Component{
   constructor(props) {
@@ -27,28 +26,37 @@ class DriverTripEnded extends React.Component{
       console.log(error);
     });
   }
+  backToDashboard = () => {
+    history.push('/')
+  }
   render = () => (
     <div>
-    {
-      this.state.currentTrip ? 
-      <div>
-      <h2>Ryde has ended</h2>
-      <h3>How was {this.state.currentTrip.fname} {this.state.currentTrip.lname}?</h3>
-      <Rating 
-        icon = 'star' 
-        defaultRating = {3} 
-        maxRating = {5} 
-        onRate = {this.handleRate}
-      />
-      <h5></h5>
-      <Button 
-        content = 'Submit Rating!'
-        size = 'large'
-        onClick = {this.submitRating}
-      />
-    </div> 
-    : <p>error</p>
-    }
+      {
+        (this.state.currentTrip)?
+        <div>
+          <Button
+            content = 'Back to Dashboard'
+            icon = 'arrow left'
+            onClick = {this.backToDashboard}
+          />
+          <h6>   </h6>
+          <Header as = 'h2'>END OF RYDE</Header>
+          <h3>How was {this.state.currentTrip.fname} {this.state.currentTrip.lname}?</h3>
+          <Rating 
+            icon = 'star' 
+            defaultRating = {3} 
+            maxRating = {5} 
+            onRate = {this.handleRate}
+          />
+          <h5>   </h5>
+          <Button 
+            content = 'Submit Rating!'
+            size = 'large'
+            onClick = {this.submitRating}
+          />
+        </div>
+        : history.push('/')
+      }
     </div>
   )
   handleRate = (event, {rating}) => {
@@ -75,6 +83,7 @@ class DriverTripEnded extends React.Component{
         });
         alert('Trip has ended! Redirecting to dashboard');
         history.push('/');
+        window.location.reload();
       } else {
         console.error(response);
       }

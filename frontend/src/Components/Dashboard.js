@@ -6,12 +6,12 @@ import history from '../history';
 class Dashboard extends React.Component{
   render = () => (
     <div className='dashboard'>
-      <h2>You are now ready for a Ryde.</h2>
+      <h2>You are ready for a Ryde.</h2>
       <Button 
         content = 'Manage payment account'
         icon = 'payment'
         width = '16' 
-        size = 'massive' 
+        size = 'large' 
         onClick = {this.managePaymentAccount}
       />
     </div>
