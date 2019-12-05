@@ -1,5 +1,5 @@
 import React from 'react';
-import { Grid, Header, Label, Icon, Button, Container, Divider, Rating } from 'semantic-ui-react';
+import { Button, Rating } from 'semantic-ui-react';
 import history from '../../../history'
 const axios = require('axios');
 const moment = require('moment');
@@ -26,23 +26,12 @@ class DriverTripEnded extends React.Component{
     }).catch((error) => {
       console.log(error);
     });
-    axios.get('http://localhost:5000/api/payDriver', {
-      params: {
-        userId: localStorage.getItem('accountId'),
-        fare: this.state.currentTrip.fare
-      }
-    }).then((response) => {
-      if (response.data.success) {
-        this.setState({
-          currentTrip: response.data.trip
-        });
-      }
-    }).catch((error) => {
-      console.log(error);
-    });
   }
   render = () => (
     <div>
+    {
+      this.state.currentTrip ? 
+      <div>
       <h2>Ryde has ended</h2>
       <h3>How was {this.state.currentTrip.fname} {this.state.currentTrip.lname}?</h3>
       <Rating 
@@ -57,6 +46,9 @@ class DriverTripEnded extends React.Component{
         size = 'large'
         onClick = {this.submitRating}
       />
+    </div> 
+    : <p>error</p>
+    }
     </div>
   )
   handleRate = (event, {rating}) => {
@@ -89,7 +81,19 @@ class DriverTripEnded extends React.Component{
     }).catch((error) => {
       console.error(error);
     });
-    
+    console.log(this.state.currentTrip.fare);
+    axios.post('http://localhost:5000/api/payDriver', {
+      userId: localStorage.getItem('accountId'),
+      fare: this.state.currentTrip.fare
+    }).then((response) => {
+      if (response.data.success) {
+        this.setState({
+          currentTrip: response.data.trip
+        });
+      }
+    }).catch((error) => {
+      console.log(error);
+    });
   }
 }
 

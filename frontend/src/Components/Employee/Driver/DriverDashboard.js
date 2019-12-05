@@ -1,7 +1,6 @@
 import React from 'react';
 import { Divider, Rating, Button } from 'semantic-ui-react'
 import Dashboard from '../../Dashboard'
-import TripPagePicker from './TripPagePicker'
 import history from '../../../history'
 const axios = require('axios');
 
@@ -9,8 +8,8 @@ class DriverDashboard extends React.Component{
   constructor(props){
     super(props);
     this.state = {
-      currentTripId: null,
-      rating: 0
+      currentTrip: null,
+      driverRating: 0
     }
   }
   componentDidMount() {
@@ -21,33 +20,30 @@ class DriverDashboard extends React.Component{
     }).then((response) => {
       if (response.data.success) {
         this.setState({
-          currentTripId: response.data.trip.trip_id
+          currentTrip: response.data.trip
         });
       }
     }).catch((error) => {
       console.log(error);
     });
-    axios.get('http://localhost:5000/api/getDriverRating', {
-      params:{
-        userId: localStorage.getItem('accountId')
-      }
+    axios.post('http://localhost:5000/api/getDriverRating',{
+      user_id: localStorage.getItem('accountId')
     }).then((response) => {
-      if (response.data.success) {
+      if(response.data.success) {
         this.setState({
-          rating: response.data.rating.driver_rating
-          
+          driverRating: response.data.rating
         });
-        console.log(this.state.rating);
       }
     }).catch((error) => {
       console.log(error);
     });
+    console.log( this.state.driverRating);
   }
   render = () => (
     <div>
       <Dashboard />
       {
-        this.state.currentTripId ?
+        this.state.currentTrip ?
           <Button 
             onClick={this.viewCurrentTrip}
             content='View Current Ryde'
@@ -56,13 +52,19 @@ class DriverDashboard extends React.Component{
           : 
           <div>
             <h1>Waiting for Ryde</h1>
-            <Divider horizontal>Your Rating</Divider>
-            <Rating disabled icon='star' defaultRating = {this.state.rating} maxRating={5} />
           </div>  
       }
+
+      <Divider horizontal>Your Rating</Divider>
+      <Rating 
+        icon='star' 
+        rating = {this.state.driverRating}
+        maxRating={5} 
+        disabled />
     </div>
   )
   viewCurrentTrip = () => {
+    this.setState({currentTrip: null})
     history.push('/viewDriverTrip');
   }
 }
