@@ -214,8 +214,20 @@ routes.post('/api/bookCarTrip', async (req, res) => {
 
   try {
     const selectAvailableDriver = await db.query('SELECT user_id FROM DRIVER WHERE availability=1');
-    if (!selectAvailableDriver.length) { throw new Error('Unable to find find available vehicle'); }
+    if (!selectAvailableDriver.length) { throw new Error('Unable to find find available driver'); }
     const driverId = selectAvailableDriver[0].user_id;
+
+    let otherUserId = null;
+    //  check if there's another user splitting the fare
+    if (otherUser !== "") {
+      const checkOtherUser = await db.query('SELECT user_id FROM USER WHERE accountType="Customer" AND email=?', [otherUser]);
+      if (!checkOtherUser.length) { 
+        res.status(200).json({success: false, message: `Unable to find other user with email ${otherUser}`});
+        return;
+       }
+      otherUserId = checkOtherUser[0].user_id;
+    }
+
     //  create a new trip
     const createTrip = await db.query('INSERT INTO TRIP SET ?', {
       pickup_latitude: startLat,
@@ -236,12 +248,9 @@ routes.post('/api/bookCarTrip', async (req, res) => {
     //  create a new car trip
     const createCarTrip = await db.query('INSERT INTO CAR_TRIP SET ?', { trip_id: tripId, driver_id: driverId });
     if (!createCarTrip.affectedRows) { throw new Error('Unable to create car trip'); }
-    //  create a "takes" entity
-    if (!otherUser === "") {
-      const checkOtherUser = await db.query('SELECT user_id FROM USER WHERE accountType=Customer AND email=?', [otherUser]);
-      if (!checkOtherUser.length) { throw new Error('Unable to get other user'); }
-
-      const createTakes = await db.query('INSERT INTO TAKES SET ?', { Trip_id: tripId, user_id: checkOtherUser[0].user_id, user_who_initiated_trip_id: userId });
+    //  create a "takes" entity (or two)
+    if (otherUserId) {
+      const createTakes = await db.query('INSERT INTO TAKES SET ?', { Trip_id: tripId, user_id: otherUserId, user_who_initiated_trip_id: userId });
       if (!createTakes.affectedRows) { throw new Error('Unable to create takes with other user'); }
     }
     const createTakes = await db.query('INSERT INTO TAKES SET ?', { Trip_id: tripId, user_id: userId, user_who_initiated_trip_id: userId });
@@ -249,7 +258,7 @@ routes.post('/api/bookCarTrip', async (req, res) => {
     res.status(200).json({ success: true });
   } catch (error) {
     console.log(error);
-    res.status(400).json({ success: false });
+    res.status(400).json({ success: false, message: error });
   }
 });
 

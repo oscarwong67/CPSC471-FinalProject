@@ -46,16 +46,17 @@ class BookCarTrip extends React.Component {
         userId: localStorage.getItem('accountId'),
         otherUser: this.state.otherUser
       }).then((response) => {
+        console.log(response.data);
         //  handle case of status = 'success'
         if (response.data.success) {
           alert('Successfully booked trip. Redirecting you to your dashboard.');
           history.push('/');
         } else {
-          alert('Failed to book trip. No available drivers. Please try again later.');
+          alert(response.data.message);
         }
       }).catch((error) => {
-        alert('Failed to book trip. No available drivers. Please try again later.');
         console.error(error);
+        alert('Failed to book trip. No available drivers. Please try again later.');
       });
     }
   }
