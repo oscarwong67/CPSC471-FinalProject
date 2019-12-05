@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactMapGL, { Marker } from "react-map-gl";
-import { Grid, Icon, Label, Button } from 'semantic-ui-react'
+import { Grid, Icon, Label, Button, Form } from 'semantic-ui-react'
 import "../../Styles/MapStyle.css"
 import history from '../../history';
 const axios = require('axios');
@@ -22,6 +22,7 @@ class BookCarTrip extends React.Component {
         longitude: -122.4376,
         zoom: defaultZoom
       },
+      otherUser: '',
       latitude: 51.0776,
       longitude: -114.1407,
       destinationSelected: false,
@@ -42,7 +43,8 @@ class BookCarTrip extends React.Component {
         startLongitude: this.state.longitude,
         destLatitude: this.state.destLatitude,
         destLongitude: this.state.destLongitude,
-        userId: localStorage.getItem('accountId')
+        userId: localStorage.getItem('accountId'),
+        otherUser: this.state.otherUser
       }).then((response) => {
         //  handle case of status = 'success'
         if (response.data.success) {
@@ -56,6 +58,11 @@ class BookCarTrip extends React.Component {
         console.error(error);
       });
     }
+  }
+  handleTextInputChange = (event) => {
+    this.setState({
+      otherUser: event.target.value
+    })
   }
   handleUpdatePositionDefaultDestLongitude = (position) => {
     let destLongitude = this.state.destLongitude;
@@ -131,6 +138,12 @@ class BookCarTrip extends React.Component {
       <Button onClick={this.handleDestinationSelect}>
         Select a Destination
       </Button>
+      <Form>
+        <Form.Field>
+          <label>Split the Fare:</label>
+          <input placeholder="Other Ryder's Email" onChange={this.handleTextInputChange} />
+        </Form.Field>
+      </Form>
       <Button onClick={this.submitCarTripRequest}>
         Book your Ryde!
       </Button>

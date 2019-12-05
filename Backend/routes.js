@@ -389,10 +389,13 @@ routes.post('/api/payForTrip', async (req, res) => {
     const tripId = req.body.tripId;
     const customerResult = await db.query('SELECT U.user_id, balance FROM USER AS U, TAKES AS T, PAYMENT_ACCOUNT AS P WHERE U.user_id=T.user_id AND P.user_id=U.user_id AND T.Trip_id=?', [tripId]);
     if (!customerResult.length) throw new Error('Unable to get customer payment account while paying for trip with id ' + tripId);
-    const userId = customerResult[0].user_id;
-    const newBalance = customerResult[0].balance - fare;
-    const payForTripResult = await db.query('UPDATE PAYMENT_ACCOUNT SET BALANCE=? WHERE user_id=?', [newBalance, userId]);
-    if (!payForTripResult.affectedRows) throw new Error('Unable to pay from customer for trip ' + tripId);
+    const numUsersOnTrip = customerResult.length;
+    for (let i = 0; i < customerResult.length; i++) {
+      const userId = customerResult[i].user_id;
+      const newBalance = customerResult[i].balance - (fare / numUsersOnTrip);
+      const payForTripResult = await db.query('UPDATE PAYMENT_ACCOUNT SET BALANCE=? WHERE user_id=?', [newBalance, userId]);
+      if (!payForTripResult.affectedRows) throw new Error('Unable to pay from customer for trip ' + tripId);
+    }
     res.status(200).json({ success: true });
   } catch (error) {
     console.log(error);
