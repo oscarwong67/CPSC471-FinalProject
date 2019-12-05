@@ -33,11 +33,11 @@ class DriverDashboard extends React.Component{
       }
     }).then((response) => {
       if (response.data.success) {
+        console.log(response.data);
         this.setState({
-          rating: response.data.rating.driver_rating
+          rating: response.data.rating
           
         });
-        console.log(this.state.rating);
       }
     }).catch((error) => {
       console.log(error);
@@ -57,7 +57,7 @@ class DriverDashboard extends React.Component{
           <div>
             <h1>Waiting for Ryde</h1>
             <Divider horizontal>Your Rating</Divider>
-            <Rating disabled icon='star' defaultRating = {this.state.rating} maxRating={5} />
+            <Rating disabled icon='star' rating={this.state.rating} maxRating={5} />
           </div>  
       }
     </div>

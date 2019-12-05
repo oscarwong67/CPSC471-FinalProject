@@ -377,14 +377,14 @@ routes.post('/api/setDriverEnded', async (req, res) => {
   }
 });
 
-routes.post('/api/getDriverRating', async (req, res) => {
-  const userId = req.body.userId;
+routes.get('/api/getDriverRating', async (req, res) => {
+  const userId = req.query.userId;
   try {
     const rating = await db.query('SELECT driver_rating FROM DRIVER WHERE user_id=?', [userId]);
     console.log(rating[0]);
     if(!rating.length) { throw new Error('Unable to get driver\'s rating'); }
     
-    res.status(200).json({ success: true, rating: rating[0] });
+    res.status(200).json({ success: true, rating: rating[0].driver_rating });
   } catch (error) {
     console.log(error);
     res.status(400).json({ success: false });
