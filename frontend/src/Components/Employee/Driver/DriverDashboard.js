@@ -26,20 +26,20 @@ class DriverDashboard extends React.Component{
     }).catch((error) => {
       console.log(error);
     });
-    axios.post('http://localhost:5000/api/getDriverRating',{
-      user_id: localStorage.getItem('accountId')
+
+    axios.get('http://localhost:5000/api/getDriverRating', {
+      params: {
+        userId: localStorage.getItem('accountId')
+      }
     }).then((response) => {
       if (response.data.success) {
-        console.log(response.data);
         this.setState({
-          rating: response.data.rating
-          
+          driverRating: response.data.rating          
         });
       }
     }).catch((error) => {
       console.log(error);
     });
-    console.log( this.state.driverRating);
   }
   render = () => (
     <div>
@@ -52,11 +52,7 @@ class DriverDashboard extends React.Component{
             icon='car'
           />            
           : 
-          <div>
-            <h1>Waiting for Ryde</h1>
-            <Divider horizontal>Your Rating</Divider>
-            <Rating disabled icon='star' rating={this.state.rating} maxRating={5} />
-          </div>  
+          null
       }
 
       <Divider horizontal>Your Rating</Divider>

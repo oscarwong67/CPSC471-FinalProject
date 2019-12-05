@@ -43,6 +43,9 @@ class ViewDriverTrip extends React.Component{
       console.log(error);
     });
   }
+  backToDashboard = () => {
+    history.push('/')
+  }
   render = () => (
     <div>
       <Button
@@ -53,7 +56,7 @@ class ViewDriverTrip extends React.Component{
       {
         (this.state.tripStatus === 'ACTIVE') ? 
           <DriverCurrentTrip /> 
-          : this.renderTripEnded
+          : this.renderTripEnded()
       }
       <h4></h4>
     </div>
