@@ -510,7 +510,7 @@ routes.post('/api/updateEVForTripEnd', async (req, res) => {
     const currentChargeResults = await db.query('SELECT battery_percentage FROM ELECTRIC_VEHICLE WHERE vehicle_id=?', [evId]);
     if (!currentChargeResults.length) throw new Error('Unable to get charge for EV with id ' + evId);
     const charge = helper.calcChargeAfterReduction(startLat, startLng, destLat, destLng, currentChargeResults[0].battery_percentage);
-    const result = await db.query('UPDATE ELECTRIC_VEHICLE SET availability=1, battery_percentage=? WHERE vehicle_id=?', [charge, evId]);
+    const result = await db.query('UPDATE ELECTRIC_VEHICLE SET availability=1, battery_percentage=?, loc_latitude=?, loc_longitude=? WHERE vehicle_id=?', [charge, destLat, destLng, evId]);
     if (!result.affectedRows) throw new Error('Unable to update charge for EV with id ' + evId);
     res.status(200).json({ success: true });
   } catch (error) {
